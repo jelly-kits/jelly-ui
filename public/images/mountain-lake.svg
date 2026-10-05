@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img" aria-label="日出时分雪山倒映在平静的湖面上">
+  <defs>
+    <linearGradient id="ml-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#27457e" />
+      <stop offset="0.42" stop-color="#8e6ea6" />
+      <stop offset="0.74" stop-color="#f0a271" />
+      <stop offset="1" stop-color="#ffd89c" />
+    </linearGradient>
+    <linearGradient id="ml-water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7c98f" />
+      <stop offset="0.32" stop-color="#7d86b5" />
+      <stop offset="1" stop-color="#2c3b66" />
+    </linearGradient>
+    <linearGradient id="ml-far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8d92bd" />
+      <stop offset="1" stop-color="#5d639a" />
+    </linearGradient>
+    <linearGradient id="ml-near" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3d4776" />
+      <stop offset="1" stop-color="#232a48" />
+    </linearGradient>
+    <radialGradient id="ml-glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff7d2" />
+      <stop offset="1" stop-color="#ffcf7a" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="520" fill="url(#ml-sky)" />
+  <circle cx="600" cy="470" r="190" fill="url(#ml-glow)" />
+  <circle cx="600" cy="470" r="56" fill="#fff3c6" />
+
+  <path d="M0 520 L148 398 L258 470 L398 344 L520 468 L642 376 L782 480 L900 418 L1052 490 L1200 428 L1200 520 Z" fill="url(#ml-far)" />
+  <path d="M398 344 L338 404 L362 414 L398 392 L436 416 L462 406 Z" fill="#eef3ff" fill-opacity="0.85" />
+  <path d="M782 480 L720 430 L746 426 L782 452 L818 428 L844 432 Z" fill="#eef3ff" fill-opacity="0.6" />
+
+  <rect y="520" width="1200" height="380" fill="url(#ml-water)" />
+
+  <g transform="translate(0 1040) scale(1 -1)" opacity="0.34">
+    <path d="M0 520 L148 398 L258 470 L398 344 L520 468 L642 376 L782 480 L900 418 L1052 490 L1200 428 L1200 520 Z" fill="url(#ml-far)" />
+  </g>
+
+  <path d="M0 520 L122 470 L244 520 L366 458 L488 520 L610 468 L732 520 L854 478 L976 520 L1098 488 L1200 520 Z" fill="url(#ml-near)" />
+  <g transform="translate(0 1040) scale(1 -1)" opacity="0.55">
+    <path d="M0 520 L122 470 L244 520 L366 458 L488 520 L610 468 L732 520 L854 478 L976 520 L1098 488 L1200 520 Z" fill="url(#ml-near)" />
+  </g>
+
+  <ellipse cx="600" cy="596" rx="64" ry="118" fill="#ffe0a8" opacity="0.3" />
+
+  <g stroke="#ffffff" stroke-opacity="0.2" stroke-width="4" stroke-linecap="round">
+    <path d="M470 620 H730" />
+    <path d="M420 672 H780" />
+    <path d="M500 716 H700" />
+    <path d="M360 764 H840" />
+    <path d="M440 812 H760" />
+    <path d="M300 860 H900" />
+  </g>
+</svg>

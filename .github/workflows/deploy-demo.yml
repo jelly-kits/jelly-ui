@@ -1,0 +1,61 @@
+name: Deploy demo
+
+# 文档站（demo/ + 根 index.html）发布到 GitHub Pages。
+# 地址：https://jelly-kits.github.io/jelly-ui/
+#
+# 首次使用需要手动做一次：仓库 Settings → Pages → Source 选 “GitHub Actions”。
+# 之后推 main 自动发布，也可以在 Actions 页手动触发（workflow_dispatch）。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Pages 部署必需：id-token 给 deploy-pages 做 OIDC 校验
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同时只跑一个 Pages 部署。cancel-in-progress 刻意保持 false ——
+# 打断一个进行中的部署可能让线上停在半成品，排队等它跑完更安全。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 提前跑（官方模板也是这个顺序）：Pages 没启用时它会立刻报
+      # “Get Pages site failed”，不用等 npm ci + build 跑完才失败。
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          # package.json 的 engines 要求 >= 18，这里用当前 LTS
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # prebuild:demo 会自动重跑 scripts/gen-api.mjs 生成 demo/api-data.ts。
+      # base 必须是「/仓库名/」—— 项目站发布在 https://<org>.github.io/<repo>/ 子路径下，
+      # 写死为 / 会让产物里的 /assets/* 指向站点根目录而 404。仓库改名时这里要同步改。
+      - run: npm run build:demo -- --base=/jelly-ui/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-demo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

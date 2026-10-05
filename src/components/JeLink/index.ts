@@ -1,0 +1,1 @@
+export { default as JeLink } from './JeLink.vue'

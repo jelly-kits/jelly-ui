@@ -1,0 +1,1 @@
+export { default as JeDivider } from './JeDivider.vue'

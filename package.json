@@ -1,0 +1,73 @@
+{
+  "name": "@jelly-kits/jelly-ui",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "果冻手感（jelly）Vue 3 组件库 · 原型",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "vue3",
+    "component",
+    "components",
+    "ui",
+    "ui-kit",
+    "typescript",
+    "jelly-ui"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jelly-kits/jelly-ui.git"
+  },
+  "homepage": "https://jelly-kits.github.io/jelly-ui/",
+  "bugs": {
+    "url": "https://github.com/jelly-kits/jelly-ui/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/jelly-ui.cjs",
+  "module": "./dist/jelly-ui.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/jelly-ui.js",
+      "require": "./dist/jelly-ui.cjs"
+    },
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "dev": "vite",
+    "gen:api": "node scripts/gen-api.mjs",
+    "predev": "node scripts/gen-api.mjs",
+    "build": "vite build && vue-tsc -p tsconfig.build.json",
+    "build:demo": "vite build --config vite.config.demo.ts",
+    "prebuild:demo": "node scripts/gen-api.mjs",
+    "prepublishOnly": "npm run build",
+    "preview": "vite preview",
+    "preview:demo": "vite preview --config vite.config.demo.ts",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "~5.6.3",
+    "vite": "^5.4.11",
+    "vue": "^3.5.13",
+    "vue-router": "^4.6.4",
+    "vue-tsc": "^2.1.10"
+  }
+}

@@ -1,0 +1,1 @@
+export { default as JeImagePreview } from './JeImagePreview.vue'

@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>果冻表单 · 完整版</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    font-family: system-ui, -apple-system, sans-serif;
+    padding: 48px 24px;
+  }
+
+  /* ============================================================
+     表单卡片
+  ============================================================ */
+  .form-card {
+    width: 100%;
+    max-width: 480px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 28px;
+    padding: 40px 36px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    transform: scale(0.85);
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .form-title {
+    color: #fff;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .form-subtitle {
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  /* ============================================================
+     通用字段
+  ============================================================ */
+  .field {
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .field > label {
+    display: block;
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    transition: color 0.3s ease, transform 0.4s cubic-bezier(0.68,-0.55,0.27,1.55);
+  }
+
+  .field:focus-within > label {
+    color: #a5b4fc;
+    transform: translateX(4px);
+  }
+
+  /* 文本输入 */
+  .text-input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    outline: none;
+    transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .text-input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .text-input:focus {
+    border-color: #667eea;
+    background: rgba(102,126,234,0.12);
+    box-shadow: 0 8px 24px rgba(102,126,234,0.25);
+  }
+
+  /* ============================================================
+     自定义下拉框
+  ============================================================ */
+  .dropdown {
+    position: relative;
+    user-select: none;
+  }
+
+  .dropdown-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .dropdown-trigger.has-value { color: #fff; }
+
+  .dropdown.open .dropdown-trigger {
+    border-color: #667eea;
+    background: rgba(102,126,234,0.12);
+    box-shadow: 0 8px 24px rgba(102,126,234,0.25);
+  }
+
+  .dropdown-arrow {
+    width: 12px;
+    height: 12px;
+    border-right: 2px solid rgba(255,255,255,0.5);
+    border-bottom: 2px solid rgba(255,255,255,0.5);
+    transform: rotate(45deg);
+    transition: transform 0.4s cubic-bezier(0.68,-0.55,0.27,1.55);
+    margin-top: -4px;
+  }
+
+  .dropdown.open .dropdown-arrow {
+    transform: rotate(-135deg);
+    margin-top: 4px;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgba(30,30,50,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 6px;
+    z-index: 50;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    transform-origin: top center;
+    /* 由 JS 弹簧驱动，初始隐藏 */
+    transform: scaleY(0.6);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .dropdown.open .dropdown-menu {
+    pointer-events: auto;
+  }
+
+  .dropdown-item {
+    padding: 12px 14px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.3s cubic-bezier(0.68,-0.55,0.27,1.55);
+  }
+
+  .dropdown-item:hover {
+    background: rgba(102,126,234,0.2);
+    color: #fff;
+    transform: translateX(4px);
+  }
+
+  .dropdown-item.selected {
+    background: rgba(102,126,234,0.35);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* ============================================================
+     时间选择框（自定义）
+  ============================================================ */
+  .time-picker {
+    position: relative;
+  }
+
+  .time-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .time-trigger.has-value { color: #fff; }
+
+  .time-picker.open .time-trigger {
+    border-color: #667eea;
+    background: rgba(102,126,234,0.12);
+    box-shadow: 0 8px 24px rgba(102,126,234,0.25);
+  }
+
+  .time-icon {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 50%;
+    position: relative;
+  }
+
+  .time-icon::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    width: 1.5px;
+    height: 5px;
+    background: rgba(255,255,255,0.5);
+    transform: translateX(-50%);
+  }
+
+  .time-icon::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 4px;
+    height: 1.5px;
+    background: rgba(255,255,255,0.5);
+  }
+
+  .time-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgba(30,30,50,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 16px;
+    z-index: 50;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    transform-origin: top center;
+    transform: scaleY(0.6);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .time-picker.open .time-panel {
+    pointer-events: auto;
+  }
+
+  .time-panel-title {
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .time-wheel {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .time-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.2) transparent;
+  }
+
+  .time-column::-webkit-scrollbar { width: 4px; }
+  .time-column::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+  }
+
+  .time-cell {
+    min-width: 48px;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 15px;
+    color: rgba(255,255,255,0.5);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.35s cubic-bezier(0.68,-0.55,0.27,1.55);
+  }
+
+  .time-cell:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+  }
+
+  .time-cell.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-weight: 700;
+    transform: scale(1.15);
+  }
+
+  .time-sep {
+    display: flex;
+    align-items: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  /* ============================================================
+     单选框
+  ============================================================ */
+  .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .radio-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid transparent;
+    transition: background 0.25s ease, border-color 0.25s ease;
+  }
+
+  .radio-item:hover {
+    background: rgba(255,255,255,0.08);
+  }
+
+  .radio-item input { display: none; }
+
+  .radio-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.25s ease, background 0.25s ease;
+    will-change: transform;
+  }
+
+  .radio-circle::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    transform: scale(0);
+    transition: transform 0.4s cubic-bezier(0.68,-0.55,0.27,1.55);
+  }
+
+  .radio-item input:checked + .radio-circle {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+  }
+
+  .radio-item input:checked + .radio-circle::after {
+    transform: scale(1);
+  }
+
+  .radio-item span {
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+  }
+
+  .radio-item input:checked ~ span {
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* ============================================================
+     多选框
+  ============================================================ */
+  .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    transition: background 0.25s ease;
+  }
+
+  .checkbox-item:hover {
+    background: rgba(255,255,255,0.08);
+  }
+
+  .checkbox-item input { display: none; }
+
+  .checkbox-box {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.25s ease, background 0.25s ease;
+    will-change: transform;
+  }
+
+  .checkbox-box svg {
+    width: 13px;
+    height: 13px;
+    stroke: #fff;
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    transition: stroke-dashoffset 0.3s ease 0.1s;
+  }
+
+  .checkbox-item input:checked + .checkbox-box {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-color: transparent;
+  }
+
+  .checkbox-item input:checked + .checkbox-box svg {
+    stroke-dashoffset: 0;
+  }
+
+  .checkbox-item span {
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+  }
+
+  .checkbox-item input:checked ~ span {
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* ============================================================
+     提交按钮（果冻形变）
+  ============================================================ */
+  .submit-btn {
+    position: relative;
+    width: 100%;
+    padding: 17px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    outline: none;
+    transform-origin: center bottom;
+    will-change: transform;
+    box-shadow:
+      0 10px 30px rgba(102,126,234,0.4),
+      inset 0 2px 4px rgba(255,255,255,0.3),
+      inset 0 -3px 6px rgba(0,0,0,0.2);
+    transition: box-shadow 0.3s ease;
+    margin-top: 8px;
+  }
+
+  .submit-btn:hover {
+    box-shadow:
+      0 14px 40px rgba(102,126,234,0.55),
+      inset 0 2px 4px rgba(255,255,255,0.3),
+      inset 0 -3px 6px rgba(0,0,0,0.2);
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    inset: 2px 2px 50% 2px;
+    border-radius: 16px 16px 40% 40%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+
+  /* ============================================================
+     成功提示
+  ============================================================ */
+  .toast {
+    position: fixed;
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    opacity: 0;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 999px;
+    box-shadow: 0 12px 32px rgba(16,185,129,0.4);
+    pointer-events: none;
+    z-index: 100;
+    will-change: transform, opacity;
+  }
+</style>
+</head>
+<body>
+
+<form class="form-card" id="formCard" onsubmit="event.preventDefault(); showToast();">
+  <h1 class="form-title">活动报名</h1>
+  <p class="form-subtitle">所有控件都有果冻手感 🍮</p>
+
+  <!-- 姓名 -->
+  <div class="field">
+    <label>姓名</label>
+    <input type="text" class="text-input" placeholder="输入你的姓名">
+  </div>
+
+  <!-- 城市（下拉框） -->
+  <div class="field">
+    <label>城市</label>
+    <div class="dropdown" id="cityDropdown">
+      <div class="dropdown-trigger" id="cityTrigger">
+        <span id="cityLabel">请选择城市</span>
+        <span class="dropdown-arrow"></span>
+      </div>
+      <div class="dropdown-menu" id="cityMenu">
+        <div class="dropdown-item" data-value="beijing">北京</div>
+        <div class="dropdown-item" data-value="shanghai">上海</div>
+        <div class="dropdown-item" data-value="shenzhen">深圳</div>
+        <div class="dropdown-item" data-value="hangzhou">杭州</div>
+        <div class="dropdown-item" data-value="chengdu">成都</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 时间选择 -->
+  <div class="field">
+    <label>活动时间</label>
+    <div class="time-picker" id="timePicker">
+      <div class="time-trigger" id="timeTrigger">
+        <span id="timeLabel">请选择时间</span>
+        <span class="time-icon"></span>
+      </div>
+      <div class="time-panel" id="timePanel">
+        <div class="time-panel-title">选择小时和分钟</div>
+        <div class="time-wheel">
+          <div class="time-column" id="hourColumn"></div>
+          <div class="time-sep">:</div>
+          <div class="time-column" id="minuteColumn"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 单选框 -->
+  <div class="field">
+    <label>参与方式</label>
+    <div class="radio-group" id="radioGroup">
+      <label class="radio-item">
+        <input type="radio" name="mode" value="online" checked>
+        <span class="radio-circle"></span>
+        <span>线上参与</span>
+      </label>
+      <label class="radio-item">
+        <input type="radio" name="mode" value="offline">
+        <span class="radio-circle"></span>
+        <span>线下参与</span>
+      </label>
+      <label class="radio-item">
+        <input type="radio" name="mode" value="hybrid">
+        <span class="radio-circle"></span>
+        <span>线上线下结合</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- 多选框 -->
+  <div class="field">
+    <label>感兴趣的主题（可多选）</label>
+    <div class="checkbox-group" id="checkboxGroup">
+      <label class="checkbox-item">
+        <input type="checkbox" value="design">
+        <span class="checkbox-box">
+          <svg viewBox="0 0 24 24"><polyline points="4,12 10,18 20,6"/></svg>
+        </span>
+        <span>UI 设计</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" value="frontend">
+        <span class="checkbox-box">
+          <svg viewBox="0 0 24 24"><polyline points="4,12 10,18 20,6"/></svg>
+        </span>
+        <span>前端开发</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" value="animation">
+        <span class="checkbox-box">
+          <svg viewBox="0 0 24 24"><polyline points="4,12 10,18 20,6"/></svg>
+        </span>
+        <span>动效与交互</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" value="product">
+        <span class="checkbox-box">
+          <svg viewBox="0 0 24 24"><polyline points="4,12 10,18 20,6"/></svg>
+        </span>
+        <span>产品思维</span>
+      </label>
+    </div>
+  </div>
+
+  <button type="submit" class="submit-btn" id="submitBtn">提交报名</button>
+</form>
+
+<div class="toast" id="toast">✓ 提交成功！</div>
+
+<script>
+  /* ============================================================
+     弹簧动画引擎
+  ============================================================ */
+  function springAnimate({ from = 0, to = 1, stiffness = 0.15, damping = 0.75, onUpdate, onComplete }) {
+    let current = from;
+    let velocity = 0;
+
+    function frame() {
+      const acceleration = (to - current) * stiffness;
+      velocity = (velocity + acceleration) * damping;
+      current += velocity;
+
+      onUpdate(current);
+
+      if (Math.abs(velocity) < 0.001 && Math.abs(to - current) < 0.001) {
+        current = to;
+        onUpdate(current);
+        if (onComplete) onComplete();
+        return;
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ============================================================
+     1. 卡片入场
+  ============================================================ */
+  const formCard = document.getElementById('formCard');
+  springAnimate({
+    from: 0.85, to: 1, stiffness: 0.12, damping: 0.75,
+    onUpdate: (v) => {
+      formCard.style.transform = `scale(${v})`;
+      formCard.style.opacity = Math.min(1, (v - 0.85) / 0.15);
+    }
+  });
+
+  /* ============================================================
+     2. 下拉框
+  ============================================================ */
+  const cityDropdown = document.getElementById('cityDropdown');
+  const cityTrigger = document.getElementById('cityTrigger');
+  const cityLabel = document.getElementById('cityLabel');
+  const cityMenu = document.getElementById('cityMenu');
+
+  let cityMenuScale = 0.6;
+  let cityMenuOpacity = 0;
+
+  cityTrigger.addEventListener('click', () => {
+    const isOpen = cityDropdown.classList.toggle('open');
+    if (isOpen) {
+      springAnimate({
+        from: 0.6, to: 1, stiffness: 0.2, damping: 0.7,
+        onUpdate: (v) => {
+          cityMenuScale = v;
+          cityMenu.style.transform = `scaleY(${v})`;
+          cityMenu.style.opacity = Math.min(1, (v - 0.6) / 0.4);
+        }
+      });
+    } else {
+      springAnimate({
+        from: 1, to: 0.6, stiffness: 0.3, damping: 0.8,
+        onUpdate: (v) => {
+          cityMenu.style.transform = `scaleY(${v})`;
+          cityMenu.style.opacity = Math.max(0, (v - 0.6) / 0.4);
+        }
+      });
+    }
+  });
+
+  cityMenu.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', () => {
+      cityLabel.textContent = item.textContent;
+      cityTrigger.classList.add('has-value');
+      cityMenu.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      cityDropdown.classList.remove('open');
+      springAnimate({
+        from: 1, to: 0.6, stiffness: 0.3, damping: 0.8,
+        onUpdate: (v) => {
+          cityMenu.style.transform = `scaleY(${v})`;
+          cityMenu.style.opacity = Math.max(0, (v - 0.6) / 0.4);
+        }
+      });
+    });
+  });
+
+  /* ============================================================
+     3. 时间选择框
+  ============================================================ */
+  const timePicker = document.getElementById('timePicker');
+  const timeTrigger = document.getElementById('timeTrigger');
+  const timeLabel = document.getElementById('timeLabel');
+  const timePanel = document.getElementById('timePanel');
+  const hourColumn = document.getElementById('hourColumn');
+  const minuteColumn = document.getElementById('minuteColumn');
+
+  let selectedHour = null;
+  let selectedMinute = null;
+
+  // 生成小时 0-23
+  for (let h = 0; h < 24; h++) {
+    const cell = document.createElement('div');
+    cell.className = 'time-cell';
+    cell.textContent = String(h).padStart(2, '0');
+    cell.dataset.value = h;
+    cell.addEventListener('click', () => selectHour(h, cell));
+    hourColumn.appendChild(cell);
+  }
+
+  // 生成分钟 0-59，步长 5
+  for (let m = 0; m < 60; m += 5) {
+    const cell = document.createElement('div');
+    cell.className = 'time-cell';
+    cell.textContent = String(m).padStart(2, '0');
+    cell.dataset.value = m;
+    cell.addEventListener('click', () => selectMinute(m, cell));
+    minuteColumn.appendChild(cell);
+  }
+
+  function selectHour(h, cell) {
+    selectedHour = h;
+    hourColumn.querySelectorAll('.time-cell').forEach(c => c.classList.remove('active'));
+    cell.classList.add('active');
+    // 弹性放大
+    springAnimate({
+      from: 1, to: 1.15, stiffness: 0.3, damping: 0.5,
+      onUpdate: (v) => { cell.style.transform = `scale(${v})`; },
+      onComplete: () => {
+        springAnimate({
+          from: 1.15, to: 1, stiffness: 0.2, damping: 0.6,
+          onUpdate: (v) => { cell.style.transform = `scale(${v})`; }
+        });
+      }
+    });
+    updateTimeLabel();
+  }
+
+  function selectMinute(m, cell) {
+    selectedMinute = m;
+    minuteColumn.querySelectorAll('.time-cell').forEach(c => c.classList.remove('active'));
+    cell.classList.add('active');
+    springAnimate({
+      from: 1, to: 1.15, stiffness: 0.3, damping: 0.5,
+      onUpdate: (v) => { cell.style.transform = `scale(${v})`; },
+      onComplete: () => {
+        springAnimate({
+          from: 1.15, to: 1, stiffness: 0.2, damping: 0.6,
+          onUpdate: (v) => { cell.style.transform = `scale(${v})`; }
+        });
+      }
+    });
+    updateTimeLabel();
+  }
+
+  function updateTimeLabel() {
+    if (selectedHour !== null && selectedMinute !== null) {
+      timeLabel.textContent = `${String(selectedHour).padStart(2,'0')}:${String(selectedMinute).padStart(2,'0')}`;
+      timeTrigger.classList.add('has-value');
+    } else if (selectedHour !== null) {
+      timeLabel.textContent = `${String(selectedHour).padStart(2,'0')}:--`;
+      timeTrigger.classList.add('has-value');
+    } else if (selectedMinute !== null) {
+      timeLabel.textContent = `--:${String(selectedMinute).padStart(2,'0')}`;
+      timeTrigger.classList.add('has-value');
+    }
+  }
+
+  timeTrigger.addEventListener('click', () => {
+    const isOpen = timePicker.classList.toggle('open');
+    if (isOpen) {
+      springAnimate({
+        from: 0.6, to: 1, stiffness: 0.2, damping: 0.7,
+        onUpdate: (v) => {
+          timePanel.style.transform = `scaleY(${v})`;
+          timePanel.style.opacity = Math.min(1, (v - 0.6) / 0.4);
+        }
+      });
+    } else {
+      springAnimate({
+        from: 1, to: 0.6, stiffness: 0.3, damping: 0.8,
+        onUpdate: (v) => {
+          timePanel.style.transform = `scaleY(${v})`;
+          timePanel.style.opacity = Math.max(0, (v - 0.6) / 0.4);
+        }
+      });
+    }
+  });
+
+  /* ============================================================
+     4. 单选框：选中时圆圈弹性放大
+  ============================================================ */
+  document.querySelectorAll('.radio-item input').forEach(input => {
+    input.addEventListener('change', () => {
+      const circle = input.nextElementSibling;
+      springAnimate({
+        from: 1, to: 1.35, stiffness: 0.35, damping: 0.5,
+        onUpdate: (v) => { circle.style.transform = `scale(${v})`; },
+        onComplete: () => {
+          springAnimate({
+            from: 1.35, to: 1, stiffness: 0.2, damping: 0.6,
+            onUpdate: (v) => { circle.style.transform = `scale(${v})`; }
+          });
+        }
+      });
+    });
+  });
+
+  /* ============================================================
+     5. 多选框：勾选时盒子弹性放大
+  ============================================================ */
+  document.querySelectorAll('.checkbox-item input').forEach(input => {
+    input.addEventListener('change', () => {
+      const box = input.nextElementSibling;
+      if (input.checked) {
+        springAnimate({
+          from: 1, to: 1.35, stiffness: 0.35, damping: 0.5,
+          onUpdate: (v) => { box.style.transform = `scale(${v})`; },
+          onComplete: () => {
+            springAnimate({
+              from: 1.35, to: 1, stiffness: 0.2, damping: 0.6,
+              onUpdate: (v) => { box.style.transform = `scale(${v})`; }
+            });
+          }
+        });
+      } else {
+        springAnimate({
+          from: 1, to: 0.85, stiffness: 0.3, damping: 0.6,
+          onUpdate: (v) => { box.style.transform = `scale(${v})`; },
+          onComplete: () => {
+            springAnimate({
+              from: 0.85, to: 1, stiffness: 0.2, damping: 0.6,
+              onUpdate: (v) => { box.style.transform = `scale(${v})`; }
+            });
+          }
+        });
+      }
+    });
+  });
+
+  /* ============================================================
+     6. 提交按钮：果冻形变
+  ============================================================ */
+  const submitBtn = document.getElementById('submitBtn');
+  let btnState = { scaleX: 1, scaleY: 1, skewX: 0 };
+
+  function applyBtnTransform() {
+    submitBtn.style.transform =
+      `scaleX(${btnState.scaleX}) scaleY(${btnState.scaleY}) skewX(${btnState.skewX}deg)`;
+  }
+
+  function animateBtn(target, stiffness, damping) {
+    Object.keys(target).forEach(key => {
+      springAnimate({
+        from: btnState[key], to: target[key], stiffness, damping,
+        onUpdate: (v) => {
+          btnState[key] = v;
+          applyBtnTransform();
+        }
+      });
+    });
+  }
+
+  submitBtn.addEventListener('pointerdown', () => {
+    animateBtn({ scaleX: 1.18, scaleY: 0.78, skewX: -4 }, 0.4, 0.45);
+  });
+
+  submitBtn.addEventListener('pointerup', () => {
+    animateBtn({ scaleX: 1, scaleY: 1, skewX: 0 }, 0.18, 0.7);
+  });
+
+  submitBtn.addEventListener('pointerleave', () => {
+    if (btnState.scaleX !== 1 || btnState.scaleY !== 1) {
+      animateBtn({ scaleX: 1, scaleY: 1, skewX: 0 }, 0.18, 0.7);
+    }
+  });
+
+  /* ============================================================
+     7. 成功提示
+  ============================================================ */
+  const toast = document.getElementById('toast');
+
+  function showToast() {
+    springAnimate({
+      from: 0, to: 1, stiffness: 0.15, damping: 0.7,
+      onUpdate: (v) => {
+        toast.style.transform = `translateX(-50%) scale(${v})`;
+        toast.style.opacity = Math.min(1, v);
+      },
+      onComplete: () => {
+        setTimeout(() => {
+          springAnimate({
+            from: 1, to: 0, stiffness: 0.15, damping: 0.8,
+            onUpdate: (v) => {
+              toast.style.transform = `translateX(-50%) scale(${v})`;
+              toast.style.opacity = Math.max(0, v);
+            }
+          });
+        }, 1800);
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

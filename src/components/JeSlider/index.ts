@@ -1,0 +1,1 @@
+export { default as JeSlider } from './JeSlider.vue'

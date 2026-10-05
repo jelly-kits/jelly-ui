@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": []
+  },
+  "include": ["src"],
+  // src/style.ts 是纯 CSS 的构建入口（见 vite.config.ts），没有类型价值；
+  // 排除掉才不会多出一个同样带着悬空 CSS 引用的 dist/style.d.ts
+  "exclude": ["src/style.ts"]
+}

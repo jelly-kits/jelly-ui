@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img" aria-label="木桌上摆放着新鲜有机蔬菜">
+  <defs>
+    <linearGradient id="vg-wood" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b78152" />
+      <stop offset="0.5" stop-color="#a06f42" />
+      <stop offset="1" stop-color="#8a5b32" />
+    </linearGradient>
+    <linearGradient id="vg-board" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e2c094" />
+      <stop offset="1" stop-color="#c99e69" />
+    </linearGradient>
+    <radialGradient id="vg-tomato" cx="0.35" cy="0.3" r="0.85">
+      <stop offset="0" stop-color="#ff8f70" />
+      <stop offset="1" stop-color="#d63a22" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#vg-wood)" />
+  <g stroke="#7d4f2b" stroke-opacity="0.3" stroke-width="4" fill="none">
+    <path d="M0 118 C300 150 700 88 1200 128" />
+    <path d="M0 300 C320 332 680 268 1200 318" />
+    <path d="M0 522 C280 560 720 488 1200 540" />
+    <path d="M0 722 C340 752 660 688 1200 740" />
+  </g>
+
+  <ellipse cx="620" cy="500" rx="382" ry="292" fill="url(#vg-board)" />
+  <ellipse cx="620" cy="500" rx="332" ry="246" fill="none" stroke="#a97c4a" stroke-opacity="0.45" stroke-width="6" />
+
+  <g transform="translate(292 322)">
+    <path d="M0 0 C-92 -60 -122 -172 -30 -222 C40 -182 40 -70 20 -10 Z" fill="#3f8a44" />
+    <path d="M20 0 C112 -70 152 -182 60 -232 C-10 -192 0 -70 10 -10 Z" fill="#4fa353" />
+    <path d="M2 -18 C-38 -120 0 -232 20 -262 C52 -200 62 -110 32 -20 Z" fill="#63bb62" />
+  </g>
+
+  <circle cx="704" cy="358" r="96" fill="url(#vg-tomato)" />
+  <circle cx="882" cy="430" r="78" fill="url(#vg-tomato)" />
+  <circle cx="762" cy="542" r="70" fill="url(#vg-tomato)" />
+  <g fill="#2f7d3a">
+    <path d="M704 264 l-22 -26 l34 6 l12 -32 l12 32 l34 -6 l-22 26 z" />
+    <path d="M882 352 l-18 -22 l28 5 l10 -26 l10 26 l28 -5 l-18 22 z" />
+    <path d="M762 472 l-16 -20 l25 5 l9 -24 l9 24 l25 -5 l-16 20 z" />
+  </g>
+
+  <g transform="translate(348 636) rotate(-12)">
+    <path d="M0 0 L54 -72 L98 0 Z" fill="#f08a2a" />
+    <g stroke="#d4721a" stroke-width="5" stroke-linecap="round">
+      <path d="M24 -18 H72" />
+      <path d="M34 -40 H64" />
+    </g>
+    <g fill="#3f8a44">
+      <path d="M54 -76 C30 -110 34 -142 52 -154 C64 -130 66 -100 56 -76 Z" />
+      <path d="M56 -76 C70 -116 96 -134 116 -132 C104 -102 82 -82 58 -74 Z" />
+    </g>
+  </g>
+
+  <g transform="translate(972 648)">
+    <path d="M0 0 C-46 -30 -66 -96 -20 -132 C10 -150 42 -142 52 -116 C66 -78 46 -26 0 0 Z" fill="#4c9b3f" />
+    <path d="M6 -132 C2 -152 18 -166 34 -160 C30 -146 20 -136 6 -132 Z" fill="#3d7f33" />
+  </g>
+
+  <g transform="translate(566 296)">
+    <ellipse cx="0" cy="0" rx="86" ry="74" fill="#c98fb0" />
+    <ellipse cx="-16" cy="-10" rx="56" ry="48" fill="#dcaecc" />
+    <path d="M14 -74 C10 -96 26 -110 42 -104 C36 -90 26 -80 14 -74 Z" fill="#7d9a54" />
+  </g>
+
+  <g stroke="#6b8f3c" stroke-width="7" stroke-linecap="round" fill="none">
+    <path d="M60 180 C120 210 150 260 168 320" />
+    <path d="M1120 210 C1060 236 1032 278 1016 330" />
+  </g>
+</svg>

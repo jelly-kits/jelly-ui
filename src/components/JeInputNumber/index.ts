@@ -1,0 +1,1 @@
+export { default as JeInputNumber } from './JeInputNumber.vue'

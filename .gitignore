@@ -1,0 +1,40 @@
+# 依赖
+node_modules/
+
+# 构建产物（vite / vue-tsc 生成，勿手改）
+dist/
+# 文档站产物（npm run build:demo）
+dist-demo/
+*.tsbuildinfo
+
+# 缓存
+.vite/
+node_modules/.vite/
+coverage/
+
+# 日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 环境变量（本地覆盖，勿提交）
+.env
+.env.*.local
+*.local
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 无头验证用临时探针页（用完即删）
+_probe*.html

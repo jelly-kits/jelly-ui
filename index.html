@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <title>Jelly UI · 果冻组件库原型</title>
+    <!--
+      首帧兜底底色：应用样式要等 JS 执行完才注入，深色偏好下会先闪一下白底。
+      这里只铺一层纯色，真正的渐变背景仍由 demo/App.vue 负责。
+      'auto' 模式下 <html> 上不写 data-theme，所以媒体查询这一层不能省。
+    -->
+    <style>
+      html {
+        background: #f7f6ff;
+      }
+
+      html[data-theme='dark'] {
+        background: #1a1a2e;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        html:not([data-theme='light']) {
+          background: #1a1a2e;
+        }
+      }
+    </style>
+    <!--
+      明暗与主题色必须在首帧前定下来，否则会先闪一下浅色再跳到深色。
+      这段是库里的 themeInitSnippet（src/core/theme.ts）—— 两边必须同源，改一处要改另一处。
+    -->
+    <script>
+      ;(function () {
+        try {
+          var mode = localStorage.getItem('je-color-mode')
+          if (mode === 'light' || mode === 'dark') document.documentElement.dataset.theme = mode
+          var raw = localStorage.getItem('je-theme-tokens')
+          if (raw) {
+            var tokens = JSON.parse(raw)
+            var style = document.documentElement.style
+            for (var key in tokens) {
+              if (Object.prototype.hasOwnProperty.call(tokens, key)) {
+                style.setProperty(key.indexOf('--') === 0 ? key : '--je-' + key, tokens[key])
+              }
+            }
+          }
+        } catch (error) {
+          /* 存储被禁用 / 内容损坏时，交给 CSS 的媒体查询兜底 */
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/demo/main.ts"></script>
+  </body>
+</html>

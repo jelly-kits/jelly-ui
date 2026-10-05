@@ -1,0 +1,1 @@
+export { default as JeText } from './JeText.vue'

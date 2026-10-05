@@ -1,0 +1,60 @@
+name: CI
+
+# PR 与 main 都跑：PR 上拦问题，main 上保证主干始终可发布。
+# 与 deploy-demo.yml 相互独立 —— 这里只校验，不发布。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# 校验没有副作用，同一 ref 上新的推送直接取消旧的即可。
+# （部署那侧刻意用 cancel-in-progress: false，两者口径不同是对的。）
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # package.json 的 engines 要求 >= 18，这里用当前 LTS
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: 类型检查
+        run: npm run typecheck
+
+      # demo/api-data.ts 是唯一的生成物提交项，所以只需比对它一个文件。
+      # gen:api 幂等：组件源码没动时重跑不产生 diff。
+      - name: API 表与组件源码同步
+        run: |
+          npm run gen:api
+          if ! git diff --exit-code -- demo/api-data.ts; then
+            echo "::error::demo/api-data.ts 与组件源码不同步。请在本地运行 npm run gen:api，把生成的改动一并提交。"
+            exit 1
+          fi
+
+      - name: 文档站译文覆盖（页面文案）
+        run: node scripts/audit-i18n.mjs
+
+      - name: 文档站译文覆盖（API 说明）
+        run: node scripts/audit-i18n.mjs --api
+
+      - name: 减弱动效审计
+        run: node scripts/audit-motion.mjs
+
+      - name: 构建组件库
+        run: npm run build
+
+      - name: 构建文档站
+        run: npm run build:demo

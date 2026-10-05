@@ -1,0 +1,1 @@
+export { default as JeFloatingPanel } from './JeFloatingPanel.vue'
