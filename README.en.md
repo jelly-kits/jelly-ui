@@ -4,7 +4,7 @@
 
 **Repository**: <https://github.com/jelly-kits/jelly-ui> | **Docs**: <https://jelly-kits.github.io/jelly-ui/>
 
-A **prototype** Vue 3 component library with a jelly-like, springy feel, plus a built-in documentation site. The design source is [`test.html`](https://github.com/jelly-kits/jelly-ui/blob/main/test.html) in the repo root (the spring / jelly motion prototype).
+Vue 3 **Jelly** UI Component Library, plus a built-in documentation site. The design source is [`test.html`](https://github.com/jelly-kits/jelly-ui/blob/main/test.html) in the repo root (the spring / jelly motion prototype).
 
 - **Zero runtime dependencies** (icons are built-in hand-drawn SVGs); `vue` is the only peer dependency
 - Scale: 113 component folders / 134 exported components / 108 documentation pages
@@ -59,12 +59,12 @@ npm install
 npm run dev        # start the docs site (runs gen:api first)
 ```
 
-| Command | What it does |
-| --- | --- |
-| `npm run dev` | Start the docs site (`predev` runs `gen:api` automatically) |
-| `npm run gen:api` | Generate `demo/api-data.ts` from JSDoc in the component sources (**run this after changing a component**) |
-| `npm run typecheck` | `vue-tsc --noEmit` |
-| `npm run build` | Build the library to `dist/` (`vite build` + type declarations) |
+| Command              | What it does                                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`        | Start the docs site (`predev` runs `gen:api` automatically)                                                    |
+| `npm run gen:api`    | Generate `demo/api-data.ts` from JSDoc in the component sources (**run this after changing a component**)      |
+| `npm run typecheck`  | `vue-tsc --noEmit`                                                                                             |
+| `npm run build`      | Build the library to `dist/` (`vite build` + type declarations)                                                |
 | `npm run build:demo` | Build the docs site to `dist-demo/` (via `vite.config.demo.ts`; for sub-path deploys add `-- --base=/<repo>/`) |
 
 ## Project Layout

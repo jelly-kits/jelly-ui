@@ -4,7 +4,7 @@
 
 **仓库**：<https://github.com/jelly-kits/jelly-ui> ｜ **在线文档**：<https://jelly-kits.github.io/jelly-ui/>
 
-果冻手感（jelly）的 Vue 3 组件库**原型** + 自带文档站。设计源是根目录的 `test.html`（弹簧 / 果冻效果原型）。
+Vue 3 **果冻**UI组件库 + 自带文档站。设计源是根目录的 `test.html`（弹簧 / 果冻效果原型）。
 
 - **零运行时依赖**（图标是内置的自绘 SVG），`vue` 是唯一的 peer dependency
 - 规模：113 个组件目录 / 134 个导出组件 / 108 个文档页
@@ -59,12 +59,12 @@ npm install
 npm run dev        # 起文档站（会先自动跑 gen:api）
 ```
 
-| 命令 | 作用 |
-| --- | --- |
-| `npm run dev` | 起文档站（`predev` 自动执行 `gen:api`） |
-| `npm run gen:api` | 从组件源码的 JSDoc 生成 `demo/api-data.ts`（**改完组件必须跑**） |
-| `npm run typecheck` | `vue-tsc --noEmit` |
-| `npm run build` | 构建库产物到 `dist/`（`vite build` + 类型声明） |
+| 命令                   | 作用                                                                     |
+| -------------------- | ---------------------------------------------------------------------- |
+| `npm run dev`        | 起文档站（`predev` 自动执行 `gen:api`）                                          |
+| `npm run gen:api`    | 从组件源码的 JSDoc 生成 `demo/api-data.ts`（**改完组件必须跑**）                        |
+| `npm run typecheck`  | `vue-tsc --noEmit`                                                     |
+| `npm run build`      | 构建库产物到 `dist/`（`vite build` + 类型声明）                                    |
 | `npm run build:demo` | 构建文档站到 `dist-demo/`（走 `vite.config.demo.ts`；部署到子路径加 `-- --base=/仓库名/`） |
 
 ## 目录
