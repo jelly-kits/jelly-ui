@@ -25,8 +25,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          # package.json 的 engines 要求 >= 18，这里用当前 LTS
-          node-version: '20'
+          # 与 .nvmrc 保持一致。Node 20 已于 2026-03 EOL，改用维护期 LTS 22。
+          # （package.json 的 engines 仍写 >= 18 —— 那是给使用方的要求，不是 CI 的。）
+          node-version: '22'
           cache: npm
 
       - run: npm ci
