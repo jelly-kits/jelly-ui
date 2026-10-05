@@ -1,6 +1,6 @@
 {
   "name": "@jelly-kits/jelly-ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Vue 3 果冻 UI 组件库 + 自带文档站",
   "license": "MIT",
