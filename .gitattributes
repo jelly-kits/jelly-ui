@@ -1,0 +1,8 @@
+# .nvmrc 必须保持 LF：本机 core.autocrlf 开着，不声明的话工作区会被检出成 CRLF，
+# 而 nvm（sh 版，Git Bash / WSL / macOS / Linux）会把 \r 一起读进版本号，
+# 报「N/A: version "22\r" is not yet installed」。原生 nvm-windows 不读这个文件，不受影响。
+.nvmrc text eol=lf
+
+# 这个文件自身也用 LF：Windows 上被检出成 CRLF 后，规则的行尾会带上多余的 \r，
+# 上面那条规则可能就此静默失效（本机 autocrlf=true，必须显式声明）。
+.gitattributes text eol=lf

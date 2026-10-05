@@ -2,7 +2,7 @@
   "name": "@jelly-kits/jelly-ui",
   "version": "0.1.0",
   "type": "module",
-  "description": "果冻手感（jelly）Vue 3 组件库 · 原型",
+  "description": "Vue 3 果冻 UI 组件库 + 自带文档站",
   "license": "MIT",
   "keywords": [
     "vue",
