@@ -7,6 +7,10 @@ dist/
 dist-demo/
 *.tsbuildinfo
 
+# uni-app 版组件库：作为独立仓库 jelly-kits/jelly-ui-uniapp 维护，不纳入本仓库跟踪。
+# 它将来会自己 git init；届时若不被忽略，外层 git add 会把它当成嵌套仓库记成 gitlink。
+uni/
+
 # 缓存
 .vite/
 node_modules/.vite/
@@ -38,3 +42,9 @@ Thumbs.db
 
 # 无头验证用临时探针页（用完即删）
 _probe*.html
+
+# 一次性迁移脚本目录（跑完即删，产物已入库）
+.tmp-gen/
+
+# 构建期临时目录（本地把 TEMP/TMP 指到这里，避免污染系统盘）
+.tmp-esbuild/

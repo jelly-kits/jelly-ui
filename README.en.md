@@ -2,7 +2,7 @@
 
 [English](https://github.com/jelly-kits/jelly-ui/blob/main/README.en.md) | [简体中文](https://github.com/jelly-kits/jelly-ui/blob/main/README.md)
 
-**Repository**: <https://github.com/jelly-kits/jelly-ui> | **Docs**: <https://jelly-kits.github.io/jelly-ui/>
+**Repository**: <https://github.com/jelly-kits/jelly-ui> | **uni-app repo**: <https://github.com/jelly-kits/jelly-ui-uniapp> | **Docs**: <https://jelly-kits.github.io/jelly-ui/> | **uni-app docs**: <https://jelly-kits.github.io/jelly-ui-uniapp/>
 
 Vue 3 **Jelly** UI Component Library, plus a built-in documentation site. The design source is [`test.html`](https://github.com/jelly-kits/jelly-ui/blob/main/test.html) in the repo root (the spring / jelly motion prototype).
 

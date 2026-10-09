@@ -2,7 +2,7 @@
 
 [English](https://github.com/jelly-kits/jelly-ui/blob/main/README.en.md) | [简体中文](https://github.com/jelly-kits/jelly-ui/blob/main/README.md)
 
-**仓库**：<https://github.com/jelly-kits/jelly-ui> ｜ **在线文档**：<https://jelly-kits.github.io/jelly-ui/>
+**仓库**：<https://github.com/jelly-kits/jelly-ui> ｜ **uni-app 版仓库**：<https://github.com/jelly-kits/jelly-ui-uniapp> ｜ **在线文档**：<https://jelly-kits.github.io/jelly-ui/> ｜ **uni-app 版文档**：<https://jelly-kits.github.io/jelly-ui-uniapp/>
 
 Vue 3 **果冻**UI组件库 + 自带文档站。设计源是根目录的 `test.html`（弹簧 / 果冻效果原型）。
 
@@ -74,7 +74,7 @@ src/components/   组件（Je* 前缀，CSS 类名 je-）
 src/core/         动画与浮层内核（spring / useFloating / useZIndex / useFocusTrap …）
 src/theme/        全局 CSS token
 demo/pages/       文档页（108 个，与路由 1:1）
-scripts/          gen-api.mjs（API 表生成）、api-glossary.mjs（说明兜底词表）
+scripts/          gen-api.mjs（API 表生成）、api-extract.mjs（提取实现，主库与 uni 版共用）、api-glossary.mjs（说明兜底词表）
 .github/workflows/  deploy-demo.yml —— 推 main 自动把文档站发布到 GitHub Pages
 test.html         设计源原型，只读参考
 ```
