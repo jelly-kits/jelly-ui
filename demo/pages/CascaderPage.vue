@@ -73,6 +73,18 @@ const fixed = ref<(string | number)[]>(['beijing', 'chaoyang', 'sanlitun'])
       <p class="state">当前值：{{ value.length ? value.join(' / ') : 'null' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-field label="所在地区">
+        <je-cascader v-model="value" :options="regionOptions" size="large" />
+      </je-field>
+      <je-field label="所在地区">
+        <je-cascader v-model="value" :options="regionOptions" />
+      </je-field>
+      <je-field label="所在地区">
+        <je-cascader v-model="value" :options="regionOptions" size="small" />
+      </je-field>
+    </DemoBlock>
+
     <DemoBlock title="默认值与禁用项" description="禁用项无法展开或提交；清空按钮可重置选择。">
       <je-field label="已选地区">
         <je-cascader v-model="fixed" :options="regionOptions" />

@@ -30,6 +30,12 @@ const sizes: JeSegmentedOption[] = [
       <p class="state">当前视图：{{ view }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-segmented v-model="view" :options="views" size="large" />
+      <je-segmented v-model="view" :options="views" />
+      <je-segmented v-model="view" :options="views" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="含有禁用项">
       <je-segmented v-model="size" :options="sizes" />
       <p class="state">当前尺寸：{{ size }}</p>

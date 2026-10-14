@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 import type { JeSegmentedOption } from './types'
 
 defineOptions({ name: 'JeSegmented' })
@@ -11,11 +12,19 @@ const props = withDefaults(
     disabled?: boolean
     /** 撑满父级宽度 */
     block?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: 'small' | 'default' | 'large'
   }>(),
-  { modelValue: null, disabled: false, block: false },
+  { modelValue: null, disabled: false, block: false, size: undefined },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: string | number] }>()
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-segmented--${size.value}`))
 
 const activeIndex = computed(() =>
   props.options.findIndex((option) => option.value === props.modelValue),
@@ -63,7 +72,7 @@ const onKeydown = (event: KeyboardEvent) => {
 <template>
   <div
     class="je-segmented"
-    :class="{ 'is-disabled': disabled, 'is-block': block }"
+    :class="[sizeClass, { 'is-disabled': disabled, 'is-block': block }]"
     :style="{ '--je-segmented-count': options.length }"
     role="radiogroup"
     @keydown="onKeydown"
@@ -88,6 +97,10 @@ const onKeydown = (event: KeyboardEvent) => {
 
 <style scoped>
 .je-segmented {
+  /* 尺寸变量：default 为基础值，修饰类只覆盖这几个变量 */
+  --je-sg-item-py: 6px;
+  --je-sg-item-px: 14px;
+  --je-sg-item-fs: var(--je-control-fs);
   position: relative;
   display: inline-grid;
   box-sizing: border-box;
@@ -96,7 +109,19 @@ const onKeydown = (event: KeyboardEvent) => {
   font-family: inherit;
   background: var(--je-surface);
   border: var(--je-border);
-  border-radius: var(--je-radius);
+  border-radius: var(--je-control-radius);
+}
+
+.je-segmented--small {
+  --je-sg-item-py: 4px;
+  --je-sg-item-px: 10px;
+  --je-sg-item-fs: var(--je-control-fs-sm);
+}
+
+.je-segmented--large {
+  --je-sg-item-py: 8px;
+  --je-sg-item-px: 18px;
+  --je-sg-item-fs: var(--je-control-fs-lg);
 }
 
 .je-segmented.is-block {
@@ -111,7 +136,7 @@ const onKeydown = (event: KeyboardEvent) => {
   bottom: 4px;
   left: 4px;
   background: linear-gradient(135deg, var(--je-primary), var(--je-primary-end));
-  border-radius: calc(var(--je-radius) - 4px);
+  border-radius: calc(var(--je-control-radius) - 2px);
   box-shadow: 0 6px 18px color-mix(in srgb, var(--je-primary) 40%, transparent);
   transition: transform 0.36s var(--je-ease-out-back), opacity 0.2s ease;
   pointer-events: none;
@@ -120,15 +145,15 @@ const onKeydown = (event: KeyboardEvent) => {
 .je-segmented__item {
   position: relative;
   z-index: 1;
-  padding: 10px 16px;
+  padding: var(--je-sg-item-py, 6px) var(--je-sg-item-px, 14px);
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--je-sg-item-fs, var(--je-control-fs));
   font-weight: 500;
   color: var(--je-text-muted);
   white-space: nowrap;
   background: none;
   border: none;
-  border-radius: calc(var(--je-radius) - 4px);
+  border-radius: calc(var(--je-control-radius) - 2px);
   cursor: pointer;
   outline: none;
   transition: color 0.25s ease;
@@ -153,10 +178,13 @@ const onKeydown = (event: KeyboardEvent) => {
   opacity: 0.6;
 }
 
-/* 窄屏：给每格一个最小宽度，超出时可横向滑动，热区不小于 44px */
+/* 窄屏：接触屏档（32 / 44 / 50），每格给一个最小宽度，超出时可横向滑动 */
 @media (max-width: 768px) {
   .je-segmented {
     --je-segmented-min: 88px;
+    --je-sg-item-py: 9px;
+    --je-sg-item-px: 15px;
+    --je-sg-item-fs: var(--je-touch-fs);
 
     max-width: 100%;
     overflow-x: auto;
@@ -164,12 +192,20 @@ const onKeydown = (event: KeyboardEvent) => {
     scrollbar-width: none;
   }
 
-  .je-segmented::-webkit-scrollbar {
-    display: none;
+  .je-segmented--small {
+    --je-sg-item-py: 6px;
+    --je-sg-item-px: 12px;
+    --je-sg-item-fs: var(--je-touch-fs-sm);
   }
 
-  .je-segmented__item {
-    min-height: 44px;
+  .je-segmented--large {
+    --je-sg-item-py: 12px;
+    --je-sg-item-px: 18px;
+    --je-sg-item-fs: var(--je-touch-fs-lg);
+  }
+
+  .je-segmented::-webkit-scrollbar {
+    display: none;
   }
 }
 

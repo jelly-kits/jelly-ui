@@ -1,2 +1,2 @@
 export { default as JeArea } from './JeArea.vue'
-export type { JeAreaOption } from './types'
+export type { JeAreaOption, JeAreaSize } from './types'

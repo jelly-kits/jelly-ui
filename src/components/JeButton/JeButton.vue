@@ -3,6 +3,7 @@ import { computed, inject, ref } from 'vue'
 import { jePresets } from '../../core/presets'
 import { useSpring } from '../../core/useSpring'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 import type { JeIconName } from '../JeIcon/icons'
 import { jeButtonGroupKey, type JeButtonSize, type JeButtonType, type JeButtonVariant } from './types'
 
@@ -65,11 +66,11 @@ const skin = computed<JeButtonVariant>(
   () => props.variant ?? props.type ?? group?.getType() ?? 'primary',
 )
 
-/** 尺寸：组件自身优先，其次是按钮组；default 不产生类名，避免和 default 皮肤撞名 */
-const sizeClass = computed(() => {
-  const size = props.size ?? group?.getSize() ?? 'default'
-  return size === 'default' ? '' : `je-button--${size}`
-})
+/** 尺寸：组件自身优先，其次是按钮组，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size ?? group?.getSize())
+
+/** default 不产生类名，避免和 default 皮肤撞名 */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-button--${size.value}`))
 
 /** 加载中同样不可点，视觉上比 disabled 收敛一些 */
 const isDisabled = computed(() => props.disabled || props.loading)
@@ -141,19 +142,25 @@ const release = () => {
 
 <style scoped>
 .je-button {
+  /* default 档直接引用全局控件 token，small / large 只覆盖这几个变量 */
+  --jb-h: var(--je-control-h);
+  --jb-px: 16px;
+  --jb-fs: var(--je-control-fs);
+  --jb-radius: var(--je-control-radius);
   position: relative;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: var(--jb-py, 15px) var(--jb-px, 28px);
+  height: var(--jb-h);
+  padding: 0 var(--jb-px);
   font-family: inherit;
-  font-size: var(--jb-fs, 16px);
-  font-weight: 700;
+  font-size: var(--jb-fs);
+  font-weight: 500;
   line-height: 1.2;
   border: 1px solid transparent;
-  border-radius: var(--je-radius-lg);
+  border-radius: var(--jb-radius);
   cursor: pointer;
   outline: none;
   /* 皮肤默认取品牌色；具体 type 会覆盖这四个变量 */
@@ -199,7 +206,7 @@ const release = () => {
   content: '';
   position: absolute;
   inset: 2px 2px 50% 2px;
-  border-radius: var(--je-radius-lg) var(--je-radius-lg) 40% 40%;
+  border-radius: var(--jb-radius) var(--jb-radius) 40% 40%;
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
   pointer-events: none;
 }
@@ -323,17 +330,17 @@ const release = () => {
 
 /* 尺寸：default 不产生类名，避免和 default 皮肤撞名 */
 .je-button--large {
-  --jb-py: 17px;
-  --jb-px: 34px;
-  --jb-fs: 17px;
-  --jb-size: 56px;
+  --jb-h: var(--je-control-h-lg);
+  --jb-px: 20px;
+  --jb-fs: var(--je-control-fs-lg);
+  --jb-radius: var(--je-control-radius-lg);
 }
 
 .je-button--small {
-  --jb-py: 9px;
-  --jb-px: 16px;
-  --jb-fs: 14px;
-  --jb-size: 38px;
+  --jb-h: var(--je-control-h-sm);
+  --jb-px: 12px;
+  --jb-fs: var(--je-control-fs-sm);
+  --jb-radius: var(--je-control-radius-sm);
 }
 
 .je-button--round {
@@ -344,10 +351,10 @@ const release = () => {
   border-radius: 999px 999px 40% 40%;
 }
 
-/* 正圆：内容只有图标，尺寸靠 --jb-size 定死 */
+/* 正圆：内容只有图标，边长跟随高度档位 */
 .je-button--circle {
-  width: var(--jb-size, 50px);
-  height: var(--jb-size, 50px);
+  width: var(--jb-h);
+  height: var(--jb-h);
   padding: 0;
   border-radius: 50%;
 }
@@ -379,10 +386,34 @@ const release = () => {
   outline-offset: 3px;
 }
 
-/* 触屏上把热区兜到 44px，与项目内其它控件的可达性约定一致 */
+/*
+ * 触屏（窄屏）上三档整体上移一档，而不是把高度一刀切成 44px：
+ * - default 44px，与 input / select / input-number 的移动端高度对齐；
+ * - small / large 各自保留档位（40 / 48），size 在移动端依然生效；
+ * - 高度、左右内边距、字号、圆角成套变化，避免只拉高高度带来的「虚高」观感；
+ * - 圆角按钮的 width 也取自 --jb-h，所以圆不会被抻成椭圆。
+ * 断点沿用全库统一的 768px，保证同一表单行内的控件等高。
+ */
 @media (max-width: 768px) {
   .je-button {
-    min-height: 44px;
+    --jb-h: var(--je-touch-h);
+    --jb-px: var(--je-touch-px);
+    --jb-fs: var(--je-touch-fs);
+    --jb-radius: var(--je-touch-radius);
+  }
+
+  .je-button--small {
+    --jb-h: var(--je-touch-h-sm);
+    --jb-px: var(--je-touch-px-sm);
+    --jb-fs: var(--je-touch-fs-sm);
+    --jb-radius: var(--je-touch-radius-sm);
+  }
+
+  .je-button--large {
+    --jb-h: var(--je-touch-h-lg);
+    --jb-px: var(--je-touch-px-lg);
+    --jb-fs: var(--je-touch-fs-lg);
+    --jb-radius: var(--je-touch-radius-lg);
   }
 }
 

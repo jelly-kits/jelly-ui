@@ -64,6 +64,22 @@ const onSelect = (option: Option) => {
       <p class="state">已选：{{ picked }} · 输入值：{{ basic || '空' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-auto-complete
+        v-model="basic"
+        :fetch-suggestions="fetchSync"
+        placeholder="搜索水果"
+        size="large"
+      />
+      <je-auto-complete v-model="basic" :fetch-suggestions="fetchSync" placeholder="搜索水果" />
+      <je-auto-complete
+        v-model="basic"
+        :fetch-suggestions="fetchSync"
+        placeholder="搜索水果"
+        size="small"
+      />
+    </DemoBlock>
+
     <DemoBlock title="异步与加载态" description="返回 Promise 时会显示 loading 图标的加载文案，新输入会丢弃过期结果。">
       <je-auto-complete
         v-model="asyncValue"

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import JeButton from '../JeButton/JeButton.vue'
 import { useJeLocale } from '../JeLocale'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeSignature' })
 
@@ -13,8 +14,10 @@ const props = withDefaults(
     lineWidth?: number
     /** 画布背景色，空字符串表示透明底 */
     backgroundColor?: string
-    /** 画布高度，数字按 px 处理 */
+    /** 画布高度，数字按 px 处理；显式传入时优先于 size 档位映射 */
     height?: number | string
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider）；未显式传 height 时据此决定画布默认高度 */
+    size?: 'small' | 'default' | 'large'
     /** 禁用：不接收绘制 */
     disabled?: boolean
     /** 导出图片格式 */
@@ -33,6 +36,7 @@ const props = withDefaults(
     lineWidth: 2,
     backgroundColor: '',
     height: 200,
+    size: undefined,
     disabled: false,
     type: 'png',
     tips: undefined,
@@ -62,9 +66,28 @@ const tipText = computed(() => props.tips ?? t('signature.tip'))
 const clearLabel = computed(() => props.clearText ?? t('signature.clear'))
 const undoLabel = computed(() => props.undoText ?? t('signature.undo'))
 
-const heightStyle = computed(() =>
-  typeof props.height === 'number' ? `${props.height}px` : props.height,
-)
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-signature--${size.value}`))
+
+const instance = getCurrentInstance()
+
+/** 调用方是否显式传了 height：显式传入时 height 优先，档位映射只在没传时生效 */
+const heightProvided = computed(() => 'height' in (instance?.vnode.props ?? {}))
+
+/** 各档位对应的画布默认高度（px），default 取组件原有默认高度 200 */
+const SIZE_HEIGHT: Record<'small' | 'default' | 'large', number> = {
+  small: 160,
+  default: 200,
+  large: 260,
+}
+
+const heightStyle = computed(() => {
+  const value = heightProvided.value ? props.height : SIZE_HEIGHT[size.value]
+  return typeof value === 'number' ? `${value}px` : value
+})
 
 interface StrokePoint {
   x: number
@@ -284,7 +307,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="je-signature" :class="{ 'is-disabled': disabled }">
+  <div class="je-signature" :class="[sizeClass, { 'is-disabled': disabled }]">
     <div ref="wrapRef" class="je-signature__board" :style="{ height: heightStyle }">
       <canvas
         ref="canvasRef"
@@ -311,6 +334,7 @@ defineExpose({
         size="small"
         variant="ghost"
         icon="trash"
+        class="je-signature__clear"
         :disabled="disabled || empty"
         @click="clear"
       >
@@ -340,6 +364,16 @@ defineExpose({
   gap: 12px;
   width: 100%;
   font-family: inherit;
+  /* 清空按钮字号变量：default 为基础值，修饰类只覆盖它；三档与控件字号档位对齐 */
+  --je-signature-clear-fs: var(--je-control-fs);
+}
+
+.je-signature--small {
+  --je-signature-clear-fs: var(--je-control-fs-sm);
+}
+
+.je-signature--large {
+  --je-signature-clear-fs: var(--je-control-fs-lg);
 }
 
 .je-signature__board {
@@ -381,6 +415,11 @@ defineExpose({
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+/* 清空按钮：字号随 size 档位缩放（叠加工具栏祖先类，确保压过 JeButton 自身字号） */
+.je-signature__toolbar .je-signature__clear {
+  font-size: var(--je-signature-clear-fs, 14px);
 }
 
 .je-signature.is-disabled {

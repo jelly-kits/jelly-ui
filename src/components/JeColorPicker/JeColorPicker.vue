@@ -9,7 +9,7 @@ import { nextZIndex } from '../../core/useZIndex'
 import { JeIcon } from '../JeIcon'
 import type { JeColorPickerSize } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget, type JeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeColorPicker' })
 
@@ -28,10 +28,19 @@ const props = withDefaults(
     modelValue: '#667eea',
     disabled: false,
     showAlpha: false,
-    size: 'default',
+    size: undefined,
     teleportTo: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-color-picker--${size.value}`))
+
+/** 图标尺寸随档位缩放 */
+const CONTROL_ICON: Record<JeConfigSize, number> = { small: 12, default: 14, large: 16 }
+const iconSize = computed(() => CONTROL_ICON[size.value])
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
@@ -293,7 +302,7 @@ const commitHex = () => {
   <div
     ref="rootRef"
     class="je-color-picker"
-    :class="[`je-color-picker--${size}`, { 'is-disabled': disabled, 'is-open': isOpen }]"
+    :class="[sizeClass, { 'is-disabled': disabled, 'is-open': isOpen }]"
     @keydown.escape="close"
   >
     <div
@@ -310,7 +319,7 @@ const commitHex = () => {
     >
       <span class="je-color-picker__swatch" :style="{ background: currentColor }" aria-hidden="true" />
       <span class="je-color-picker__value">{{ currentColor }}</span>
-      <JeIcon name="chevron-down" :size="14" class="je-color-picker__arrow" />
+      <JeIcon name="chevron-down" :size="iconSize" class="je-color-picker__arrow" />
     </div>
 
     <Teleport
@@ -415,20 +424,47 @@ const commitHex = () => {
 
 <style scoped>
 .je-color-picker {
+  /* default 档直接引用全局控件 token，small / large 只覆盖这几个变量 */
+  --jcp-h: var(--je-control-h);
+  --jcp-px: var(--je-control-px);
+  --jcp-fs: var(--je-control-fs);
+  --jcp-swatch: 18px;
+  --jcp-field-h: var(--je-control-h);
+  --jcp-field-px: var(--je-control-px);
   display: inline-block;
   font-family: inherit;
+}
+
+.je-color-picker--small {
+  --jcp-h: var(--je-control-h-sm);
+  --jcp-px: var(--je-control-px-sm);
+  --jcp-fs: var(--je-control-fs-sm);
+  --jcp-swatch: 16px;
+  --jcp-field-h: var(--je-control-h-sm);
+  --jcp-field-px: var(--je-control-px-sm);
+}
+
+.je-color-picker--large {
+  --jcp-h: var(--je-control-h-lg);
+  --jcp-px: var(--je-control-px-lg);
+  --jcp-fs: var(--je-control-fs-lg);
+  --jcp-swatch: 22px;
+  --jcp-field-h: var(--je-control-h-lg);
+  --jcp-field-px: var(--je-control-px-lg);
 }
 
 .je-color-picker__trigger {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  font-size: 14px;
+  box-sizing: border-box;
+  height: var(--jcp-h);
+  padding: 0 var(--jcp-px);
+  font-size: var(--jcp-fs);
   color: var(--je-text);
   background: var(--je-surface);
-  border: var(--je-border);
-  border-radius: var(--je-radius);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius);
   cursor: pointer;
   outline: none;
   transition: border-color var(--je-duration) ease, box-shadow var(--je-duration) ease;
@@ -444,27 +480,12 @@ const commitHex = () => {
   box-shadow: 0 8px 24px color-mix(in srgb, var(--je-primary) 25%, transparent);
 }
 
-.je-color-picker--small .je-color-picker__trigger {
-  padding: 5px 10px;
-  font-size: 13px;
-}
-
-.je-color-picker--large .je-color-picker__trigger {
-  padding: 11px 14px;
-  font-size: 15px;
-}
-
 .je-color-picker__swatch {
   box-sizing: border-box;
-  width: 18px;
-  height: 18px;
+  width: var(--jcp-swatch, 18px);
+  height: var(--jcp-swatch, 18px);
   border: 1px solid var(--je-border-color);
   border-radius: 5px;
-}
-
-.je-color-picker--large .je-color-picker__swatch {
-  width: 22px;
-  height: 22px;
 }
 
 .je-color-picker__value {
@@ -618,10 +639,11 @@ const commitHex = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 10px;
+  height: var(--jcp-field-h, 32px);
+  padding: 0 var(--jcp-field-px, 12px);
   background: var(--je-surface);
-  border: var(--je-border);
-  border-radius: var(--je-radius-sm);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius-sm);
 }
 
 .je-color-picker__prefix {
@@ -635,7 +657,7 @@ const commitHex = () => {
   min-width: 0;
   padding: 0;
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--jcp-fs, 14px);
   color: var(--je-text);
   background: none;
   border: none;
@@ -714,8 +736,29 @@ const commitHex = () => {
     min-height: 32px;
   }
 
-  .je-color-picker__trigger {
-    min-height: 44px;
+  /* 触屏档：触发器与面板内的输入框同一条三档（32 / 44 / 50），不再被 44px 热区抬平 */
+  .je-color-picker {
+    --jcp-h: var(--je-touch-h);
+    --jcp-px: var(--je-touch-px);
+    --jcp-fs: var(--je-touch-fs);
+    --jcp-field-h: var(--je-touch-h);
+    --jcp-field-px: var(--je-touch-px);
+  }
+
+  .je-color-picker--small {
+    --jcp-h: var(--je-touch-h-sm);
+    --jcp-px: var(--je-touch-px-sm);
+    --jcp-fs: var(--je-touch-fs-sm);
+    --jcp-field-h: var(--je-touch-h-sm);
+    --jcp-field-px: var(--je-touch-px-sm);
+  }
+
+  .je-color-picker--large {
+    --jcp-h: var(--je-touch-h-lg);
+    --jcp-px: var(--je-touch-px-lg);
+    --jcp-fs: var(--je-touch-fs-lg);
+    --jcp-field-h: var(--je-touch-h-lg);
+    --jcp-field-px: var(--je-touch-px-lg);
   }
 
   /* 触屏没有 hover，预设色的放缩反馈交给按下态 */

@@ -31,6 +31,18 @@ const priceLabel = computed(() =>
       </je-field>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-field label="大尺寸">
+        <je-slider v-model="volume" size="large" />
+      </je-field>
+      <je-field label="默认尺寸">
+        <je-slider v-model="volume" />
+      </je-field>
+      <je-field label="小尺寸">
+        <je-slider v-model="volume" size="small" />
+      </je-field>
+    </DemoBlock>
+
     <DemoBlock title="范围">
       <je-field :label="priceLabel">
         <je-slider v-model="price" :min="0" :max="100" />

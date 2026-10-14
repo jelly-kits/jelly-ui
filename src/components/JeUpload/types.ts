@@ -4,6 +4,9 @@ export type JeUploadStatus = 'ready' | 'uploading' | 'success' | 'fail'
 /** 列表展现形式：text 文本 / picture 图文 / picture-card 照片墙 */
 export type JeUploadListType = 'text' | 'picture' | 'picture-card'
 
+/** 上传尺寸档位：小 / 默认 / 大 */
+export type JeUploadSize = 'small' | 'default' | 'large'
+
 /** 单次请求要携带的表单字段；值支持 Blob 与 [值, 文件名] 元组，便于一次提交多份内容 */
 export type JeUploadData = Record<string, string | Blob | [string | Blob, string] | string[]>
 

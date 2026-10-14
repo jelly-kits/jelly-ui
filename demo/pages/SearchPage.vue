@@ -30,6 +30,12 @@ const onCancel = () => {
       <p class="hint">当前关键字：{{ keyword || '（空）' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-search v-model="keyword" size="large" placeholder="大尺寸" />
+      <je-search v-model="keyword" placeholder="默认尺寸" />
+      <je-search v-model="keyword" size="small" placeholder="小尺寸" />
+    </DemoBlock>
+
     <DemoBlock title="方形与自定义背景" description="shape 控制外形，background 传任意 CSS 颜色即可换底色。">
       <je-search v-model="keyword" shape="square" placeholder="圆角方形" />
       <je-search v-model="keyword" background="rgba(64, 158, 255, 0.12)" placeholder="自定义底色" />

@@ -5,9 +5,9 @@ import { useFocusTrap } from '../../core/useFocusTrap'
 import { useScrollLock } from '../../core/useScrollLock'
 import { useSheetDrag } from '../../core/useSheetDrag'
 import { nextZIndex } from '../../core/useZIndex'
-import type { JePickerColumn, JePickerOption } from './types'
+import type { JePickerColumn, JePickerOption, JePickerSize } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JePicker' })
 
@@ -35,6 +35,8 @@ const props = withDefaults(
     itemHeight?: number
     /** 点击遮罩关闭 */
     closeOnClickModal?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JePickerSize
     /** 浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退 */
     teleportTo?: JeTeleportTarget | false
   }>(),
@@ -50,9 +52,18 @@ const props = withDefaults(
     visibleItemCount: 5,
     itemHeight: 44,
     closeOnClickModal: true,
+    size: undefined,
     teleportTo: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-picker--${size.value}`))
+
+/** 下拉箭头随档位缩放 */
+const ICON_SIZE: Record<JePickerSize, number> = { small: 14, default: 16, large: 18 }
+const iconSize = computed(() => ICON_SIZE[size.value])
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
@@ -227,7 +238,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="je-picker" :class="{ 'is-open': isOpen, 'is-disabled': disabled }">
+  <div class="je-picker" :class="[sizeClass, { 'is-open': isOpen, 'is-disabled': disabled }]">
     <button
       type="button"
       class="je-picker__trigger"
@@ -239,7 +250,7 @@ onBeforeUnmount(() => {
       @click="toggle"
     >
       <span class="je-picker__label">{{ triggerLabel || placeholder }}</span>
-      <JeIcon class="je-picker__arrow" name="chevron-down" :size="16" />
+      <JeIcon class="je-picker__arrow" name="chevron-down" :size="iconSize" />
     </button>
 
     <Teleport :to="teleportTarget === false ? 'body' : teleportTarget" :disabled="teleportTarget === false">
@@ -333,23 +344,39 @@ onBeforeUnmount(() => {
 }
 
 .je-picker__trigger {
+  /* 尺寸只改这三个变量，default 不产生类名（基础值即 default，保持原有 14px 16px / 15px） */
+  --jp-py: 14px;
+  --jp-px: 16px;
+  --jp-fs: 15px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   box-sizing: border-box;
   width: 100%;
-  padding: 14px 16px;
+  padding: var(--jp-py) var(--jp-px);
   font-family: inherit;
-  font-size: 15px;
+  font-size: var(--jp-fs);
   color: var(--je-text-faint);
   background: var(--je-surface);
   border: var(--je-border);
-  border-radius: var(--je-radius);
+  border-radius: var(--je-control-radius);
   cursor: pointer;
   outline: none;
   transition: border-color var(--je-duration) ease, background var(--je-duration) ease,
     box-shadow var(--je-duration) ease;
+}
+
+.je-picker--small .je-picker__trigger {
+  --jp-py: 9px;
+  --jp-px: 12px;
+  --jp-fs: 14px;
+}
+
+.je-picker--large .je-picker__trigger {
+  --jp-py: 17px;
+  --jp-px: 20px;
+  --jp-fs: 17px;
 }
 
 .je-picker__trigger.has-value {
@@ -490,7 +517,7 @@ onBeforeUnmount(() => {
   color: var(--je-text-muted);
   background: transparent;
   border: none;
-  border-radius: var(--je-radius-sm);
+  border-radius: var(--je-control-radius-sm);
   cursor: pointer;
   outline: none;
   transition: color var(--je-duration) ease, background var(--je-duration) ease;

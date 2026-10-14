@@ -20,6 +20,12 @@ const stepped = ref<string | null>('09:30')
       <p class="state">当前值：{{ time ?? 'null' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-time-picker v-model="time" size="large" />
+      <je-time-picker v-model="time" />
+      <je-time-picker v-model="time" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="自定义步长">
       <je-field label="半小时粒度（分钟步长 30）">
         <je-time-picker v-model="stepped" :minute-step="30" />

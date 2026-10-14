@@ -3,9 +3,10 @@ import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 import { useIsMobile } from '../../core/useMediaQuery'
 import { useScrollLock } from '../../core/useScrollLock'
 import { useSheetDrag } from '../../core/useSheetDrag'
-import type { JeSelectOption } from './types'
+import JeIcon from '../JeIcon/JeIcon.vue'
+import type { JeSelectOption, JeSelectSize } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget, type JeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeSelect' })
 
@@ -15,6 +16,8 @@ const props = withDefaults(
     options: JeSelectOption[]
     placeholder?: string
     disabled?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JeSelectSize
     /** 浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退 */
     teleportTo?: JeTeleportTarget | false
   }>(),
@@ -22,9 +25,18 @@ const props = withDefaults(
     modelValue: null,
     placeholder: '请选择',
     disabled: false,
+    size: undefined,
     teleportTo: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-select--${size.value}`))
+
+/** 下拉箭头随尺寸档位缩放，与 JePicker 右侧箭头保持同一套图标 */
+const CONTROL_ICON: Record<JeConfigSize, number> = { small: 12, default: 14, large: 16 }
+const iconSize = computed(() => CONTROL_ICON[size.value])
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
@@ -146,7 +158,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
   <div
     ref="rootRef"
     class="je-select"
-    :class="{ 'is-open': isOpen, 'is-disabled': disabled }"
+    :class="[sizeClass, { 'is-open': isOpen, 'is-disabled': disabled }]"
     @keydown="onKeydown"
   >
     <div
@@ -171,7 +183,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
         </slot>
       </span>
 
-      <span class="je-select__arrow" aria-hidden="true" />
+      <JeIcon class="je-select__arrow" name="chevron-down" :size="iconSize" />
     </div>
 
     <Teleport
@@ -227,9 +239,34 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
 
 <style scoped>
 .je-select {
+  /* default 档直接引用全局控件 token，small / large 只覆盖这几个变量 */
+  --js-h: var(--je-control-h);
+  --js-px: var(--je-control-px);
+  --js-fs: var(--je-control-fs);
+  --js-item-h: var(--je-control-h);
+  --js-item-px: var(--je-control-px);
+  --js-item-fs: var(--je-control-fs);
   position: relative;
   font-family: inherit;
   user-select: none;
+}
+
+.je-select--small {
+  --js-h: var(--je-control-h-sm);
+  --js-px: var(--je-control-px-sm);
+  --js-fs: var(--je-control-fs-sm);
+  --js-item-h: var(--je-control-h-sm);
+  --js-item-px: var(--je-control-px-sm);
+  --js-item-fs: var(--je-control-fs-sm);
+}
+
+.je-select--large {
+  --js-h: var(--je-control-h-lg);
+  --js-px: var(--je-control-px-lg);
+  --js-fs: var(--je-control-fs-lg);
+  --js-item-h: var(--je-control-h-lg);
+  --js-item-px: var(--je-control-px-lg);
+  --js-item-fs: var(--je-control-fs-lg);
 }
 
 .je-select__trigger {
@@ -237,12 +274,14 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
-  font-size: 15px;
+  box-sizing: border-box;
+  height: var(--js-h);
+  padding: 0 var(--js-px);
+  font-size: var(--js-fs);
   color: var(--je-text-faint);
   background: var(--je-surface);
-  border: var(--je-border);
-  border-radius: var(--je-radius);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius);
   cursor: pointer;
   outline: none;
   transition: border-color var(--je-duration) ease, background var(--je-duration) ease,
@@ -279,20 +318,11 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
 
 .je-select__arrow {
   flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  margin-top: -4px;
-  border-right: 2px solid var(--je-text-faint);
-  border-bottom: 2px solid var(--je-text-faint);
-  transform: rotate(45deg);
-  transition: transform 0.4s var(--je-ease-overshoot), margin-top 0.4s var(--je-ease-overshoot),
-    border-color var(--je-duration) ease;
+  transition: transform var(--je-duration) ease;
 }
 
 .je-select.is-open .je-select__arrow {
-  margin-top: 4px;
-  border-color: var(--je-text);
-  transform: rotate(-135deg);
+  transform: rotate(180deg);
 }
 
 .je-select__menu {
@@ -334,10 +364,11 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 14px;
-  font-size: 14px;
+  min-height: var(--js-item-h);
+  padding: 0 var(--js-item-px);
+  font-size: var(--js-item-fs);
   color: var(--je-text-muted);
-  border-radius: var(--je-radius-sm);
+  border-radius: var(--je-control-radius-sm);
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease,
     transform var(--je-duration) var(--je-ease-overshoot);
@@ -420,6 +451,25 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
     transition: transform 0.42s var(--je-ease-out-back), opacity 0.24s ease-out;
   }
 
+  /* 触屏档：与 input / button 同一套三档，size 在移动端依然生效 */
+  .je-select {
+    --js-h: var(--je-touch-h);
+    --js-px: var(--je-touch-px);
+    --js-fs: var(--je-touch-fs);
+  }
+
+  .je-select--small {
+    --js-h: var(--je-touch-h-sm);
+    --js-px: var(--je-touch-px-sm);
+    --js-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-select--large {
+    --js-h: var(--je-touch-h-lg);
+    --js-px: var(--je-touch-px-lg);
+    --js-fs: var(--je-touch-fs-lg);
+  }
+
   .je-select__item {
     display: flex;
     align-items: center;
@@ -438,7 +488,8 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
   /* 展开 / 收起都直接切到位，不做过渡 */
   .je-select__menu,
   .je-select__menu.is-open,
-  .je-select__scrim {
+  .je-select__scrim,
+  .je-select__arrow {
     transition: none;
   }
 }

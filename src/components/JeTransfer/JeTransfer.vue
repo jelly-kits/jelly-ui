@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { JeIcon } from '../JeIcon'
-import type { JeTransferDirection, JeTransferItem } from './types'
+import type { JeTransferDirection, JeTransferItem, JeTransferSize } from './types'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeTransfer' })
 
@@ -15,6 +16,8 @@ const props = withDefaults(
     filterable?: boolean
     disabled?: boolean
     placeholder?: string
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JeTransferSize
   }>(),
   {
     modelValue: () => [],
@@ -22,8 +25,13 @@ const props = withDefaults(
     filterable: false,
     disabled: false,
     placeholder: '请输入搜索内容',
+    size: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-transfer--${size.value}`))
 
 const emit = defineEmits<{
   'update:modelValue': [value: (string | number)[]]
@@ -128,7 +136,7 @@ const moveAll = (direction: JeTransferDirection) => {
 </script>
 
 <template>
-  <div class="je-transfer" :class="{ 'is-disabled': disabled }">
+  <div class="je-transfer" :class="[sizeClass, { 'is-disabled': disabled }]">
     <section class="je-transfer__panel">
       <header class="je-transfer__header">
         <button
@@ -272,11 +280,38 @@ const moveAll = (direction: JeTransferDirection) => {
 
 <style scoped>
 .je-transfer {
+  /* 尺寸只改这几个变量，default 不产生类名（基础样式即 default） */
+  --je-transfer-header-py: 6px;
+  --je-transfer-header-px: 10px;
+  --je-transfer-head-fs: 13px;
+  --je-transfer-item-h: var(--je-control-h);
+  --je-transfer-item-px: var(--je-control-px);
+  --je-transfer-item-fs: var(--je-control-fs);
   display: flex;
   align-items: stretch;
   gap: 12px;
   font-family: inherit;
   font-size: 14px;
+}
+
+/* 小号：面板头部与列表项各缩一档 */
+.je-transfer--small {
+  --je-transfer-header-py: 4px;
+  --je-transfer-header-px: 8px;
+  --je-transfer-head-fs: 12px;
+  --je-transfer-item-h: 24px;
+  --je-transfer-item-px: 8px;
+  --je-transfer-item-fs: var(--je-control-fs-sm);
+}
+
+/* 大号：面板头部与列表项各放大一档 */
+.je-transfer--large {
+  --je-transfer-header-py: 8px;
+  --je-transfer-header-px: 12px;
+  --je-transfer-head-fs: 14px;
+  --je-transfer-item-h: var(--je-control-h-lg);
+  --je-transfer-item-px: var(--je-control-px-lg);
+  --je-transfer-item-fs: var(--je-control-fs-lg);
 }
 
 .je-transfer__panel {
@@ -294,7 +329,7 @@ const moveAll = (direction: JeTransferDirection) => {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 8px 10px;
+  padding: var(--je-transfer-header-py, 8px) var(--je-transfer-header-px, 10px);
   border-bottom: var(--je-border);
 }
 
@@ -304,7 +339,7 @@ const moveAll = (direction: JeTransferDirection) => {
   gap: 8px;
   padding: 4px 6px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--je-transfer-head-fs, 13px);
   font-weight: 600;
   color: var(--je-text);
   background: none;
@@ -370,13 +405,14 @@ const moveAll = (direction: JeTransferDirection) => {
 .je-transfer__filter {
   box-sizing: border-box;
   width: 100%;
-  padding: 8px 10px;
+  height: var(--je-transfer-item-h, 32px);
+  padding: 0 var(--je-transfer-item-px, 12px);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--je-transfer-item-fs, 14px);
   color: var(--je-text);
   background: transparent;
-  border: var(--je-border);
-  border-radius: var(--je-radius-sm);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius);
   outline: none;
   transition: border-color var(--je-duration) ease, box-shadow var(--je-duration) ease;
 }
@@ -404,9 +440,11 @@ const moveAll = (direction: JeTransferDirection) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
+  min-height: var(--je-transfer-item-h, 32px);
+  padding: 0 var(--je-transfer-item-px, 12px);
+  font-size: var(--je-transfer-item-fs, 14px);
   color: var(--je-text-muted);
-  border-radius: var(--je-radius-sm);
+  border-radius: var(--je-control-radius-sm);
   cursor: pointer;
   transition: background var(--je-duration) ease, color var(--je-duration) ease;
 }
@@ -485,6 +523,22 @@ const moveAll = (direction: JeTransferDirection) => {
 @media (max-width: 768px) {
   .je-transfer {
     flex-direction: column;
+    /* 列表项与过滤框接触屏档（32 / 44 / 50），窄屏同样分档 */
+    --je-transfer-item-h: var(--je-touch-h);
+    --je-transfer-item-px: var(--je-touch-px);
+    --je-transfer-item-fs: var(--je-touch-fs);
+  }
+
+  .je-transfer--small {
+    --je-transfer-item-h: var(--je-touch-h-sm);
+    --je-transfer-item-px: var(--je-touch-px-sm);
+    --je-transfer-item-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-transfer--large {
+    --je-transfer-item-h: var(--je-touch-h-lg);
+    --je-transfer-item-px: var(--je-touch-px-lg);
+    --je-transfer-item-fs: var(--je-touch-fs-lg);
   }
 
   .je-transfer__operations {
@@ -501,16 +555,13 @@ const moveAll = (direction: JeTransferDirection) => {
     min-height: 44px;
   }
 
+  /* 过滤框是输入控件，字号给 16px 下限，避免 iOS 聚焦时自动放大页面 */
   .je-transfer__filter {
-    min-height: 44px;
+    font-size: max(16px, var(--je-transfer-item-fs, 14px));
   }
 
   .je-transfer__list {
     max-height: 220px;
-  }
-
-  .je-transfer__item {
-    min-height: 44px;
   }
 }
 

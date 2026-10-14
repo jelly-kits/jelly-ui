@@ -9,7 +9,7 @@ import { JeIcon } from '../JeIcon'
 import type { JeIconName } from '../JeIcon/icons'
 import { JeScrollbar } from '../JeScrollbar'
 import { JeTooltip } from '../JeTooltip'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
 import type {
   JeTableCellRef,
   JeTableCellSpan,
@@ -25,7 +25,7 @@ defineOptions({ name: 'JeTable' })
 const props = withDefaults(defineProps<JeTableProps>(), {
   border: false,
   stripe: false,
-  size: 'default',
+  size: undefined,
   layout: 'auto',
   cardLabelPosition: 'left',
   height: undefined,
@@ -64,6 +64,9 @@ const props = withDefaults(defineProps<JeTableProps>(), {
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
 
 /** 窄屏判定：卡片形态与筛选浮层的贴底样式共用同一次订阅 */
 const isMobile = useIsMobile()

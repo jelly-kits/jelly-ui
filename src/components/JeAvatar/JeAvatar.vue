@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import { useJeConfig } from '../JeConfigProvider/types'
 import type { JeIconName } from '../JeIcon/icons'
 import type { JeAvatarFit, JeAvatarShape, JeAvatarSize } from './types'
 
@@ -15,12 +16,17 @@ const props = withDefaults(
     alt?: string
     fit?: JeAvatarFit
   }>(),
-  { src: '', size: 'default', shape: 'circle', icon: 'user', alt: '', fit: 'cover' },
+  { src: '', size: undefined, shape: 'circle', icon: 'user', alt: '', fit: 'cover' },
 )
+
+const config = useJeConfig()
 
 const SIZE_MAP: Record<'small' | 'default' | 'large', number> = { small: 28, default: 40, large: 52 }
 
-const size = computed(() => (typeof props.size === 'number' ? props.size : SIZE_MAP[props.size]))
+/** 数字按 px 直接用；档位则「组件自身 → 全局配置（configureJelly / JeConfigProvider）」回退 */
+const size = computed(() =>
+  typeof props.size === 'number' ? props.size : SIZE_MAP[props.size ?? config.size.value],
+)
 
 /** 图片加载失败后回退到文字或图标 */
 const failed = ref(false)

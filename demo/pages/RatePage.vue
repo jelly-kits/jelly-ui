@@ -19,6 +19,19 @@ const readonly = ref(4)
       <p class="state">当前评分：{{ score }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="size 可传档位或像素数值，不传时取全局配置。">
+      <je-rate v-model="score" size="small" />
+      <je-rate v-model="score" />
+      <je-rate v-model="score" size="large" />
+      <je-rate v-model="score" :size="30" />
+    </DemoBlock>
+
+    <DemoBlock title="自定义颜色" description="color 传任意 CSS 颜色，覆盖填充星星的默认 warning 色。">
+      <je-rate v-model="score" color="#3b82f6" />
+      <je-rate :model-value="4" color="#10b981" />
+      <p class="state">当前评分：{{ score }}</p>
+    </DemoBlock>
+
     <DemoBlock title="半星与再次点击清零">
       <je-rate v-model="half" allow-half clearable />
       <p class="state">当前评分：{{ half }}</p>

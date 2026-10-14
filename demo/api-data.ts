@@ -12,6 +12,11 @@ export interface ApiRow {
   type?: string
   /** 默认值，仅属性有 */
   default?: string
+  /**
+   * 该成员从哪个版本开始提供，来自注释里的 @since x.y.z。
+   * 目前只做提取与留存，暂未参与渲染（详见 scripts/api-extract.mjs 的文件头说明）。
+   */
+  since?: string
 }
 
 export interface ComponentApi {
@@ -580,6 +585,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "default": "true"
       },
       {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeAreaSize"
+      },
+      {
         "name": "teleportTo",
         "description": "浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退",
         "type": "JeTeleportTarget | false"
@@ -684,6 +694,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "default": "'无匹配结果'"
       },
       {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）；透传给内部输入框",
+        "type": "JeInputSize"
+      },
+      {
         "name": "teleportTo",
         "description": "浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退",
         "type": "JeTeleportTarget | false"
@@ -720,8 +735,7 @@ export const componentApi: Record<string, ComponentApi> = {
       {
         "name": "size",
         "description": "尺寸",
-        "type": "JeAvatarSize",
-        "default": "'default'"
+        "type": "JeAvatarSize"
       },
       {
         "name": "shape",
@@ -1183,6 +1197,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "default": "true"
       },
       {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeCascaderSize"
+      },
+      {
         "name": "teleportTo",
         "description": "浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退",
         "type": "JeTeleportTarget | false"
@@ -1251,8 +1270,7 @@ export const componentApi: Record<string, ComponentApi> = {
       {
         "name": "size",
         "description": "尺寸",
-        "type": "'default' | 'large'",
-        "default": "'default'"
+        "type": "'default' | 'large'"
       },
       {
         "name": "border",
@@ -1352,6 +1370,23 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "是否禁用",
         "type": "boolean",
         "default": "false"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeCheckboxGroupSize"
+      },
+      {
+        "name": "background",
+        "description": "选项是否带底色，false 时只剩勾选框和文字",
+        "type": "boolean",
+        "default": "true"
+      },
+      {
+        "name": "border",
+        "description": "选项是否带边框（含聚焦时的描边），false 时焦点提示落到勾选框上",
+        "type": "boolean",
+        "default": "true"
       }
     ],
     "events": [
@@ -1625,8 +1660,7 @@ export const componentApi: Record<string, ComponentApi> = {
       {
         "name": "size",
         "description": "尺寸",
-        "type": "JeColorPickerSize",
-        "default": "'default'"
+        "type": "JeColorPickerSize"
       },
       {
         "name": "teleportTo",
@@ -1884,6 +1918,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "default": "true"
       },
       {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeDatePickerSize"
+      },
+      {
         "name": "disabledDate",
         "description": "判断某天是否不可选的函数",
         "type": "(date: Date) => boolean"
@@ -1949,8 +1988,7 @@ export const componentApi: Record<string, ComponentApi> = {
       {
         "name": "size",
         "description": "尺寸",
-        "type": "JeDescriptionsSize",
-        "default": "'default'"
+        "type": "JeDescriptionsSize"
       },
       {
         "name": "labelWidth",
@@ -2761,7 +2799,7 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "labelPosition",
-        "description": "标签位置；窄屏一律堆叠到控件上方",
+        "description": "标签位置：置顶 / 在左 / 在右，窄屏同样生效",
         "type": "JeFormLabelPosition",
         "default": "'top'"
       },
@@ -2776,6 +2814,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "是否禁用",
         "type": "boolean",
         "default": "false"
+      },
+      {
+        "name": "size",
+        "description": "控件默认尺寸；下发给表单内的所有控件，控件自身的 size 仍然优先",
+        "type": "JeConfigSize"
       }
     ],
     "events": [
@@ -3746,6 +3789,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "是否显示加减按钮",
         "type": "boolean",
         "default": "true"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "'small' | 'default' | 'large'"
       }
     ],
     "events": [
@@ -4520,6 +4568,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "name": "teleportTo",
         "description": "浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退",
         "type": "JeTeleportTarget | false"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）；只缩放数字按键的高度与字号",
+        "type": "'small' | 'default' | 'large'"
       }
     ],
     "events": [
@@ -4936,6 +4989,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "default": "0"
       },
       {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）；只缩放格子自身的尺寸与字号，不影响 gutter",
+        "type": "'small' | 'default' | 'large'"
+      },
+      {
         "name": "info",
         "description": "下方说明文字",
         "type": "string",
@@ -5126,6 +5184,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "点击遮罩关闭",
         "type": "boolean",
         "default": "true"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JePickerSize"
       },
       {
         "name": "teleportTo",
@@ -5779,6 +5842,23 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "是否禁用",
         "type": "boolean",
         "default": "false"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeRadioGroupSize"
+      },
+      {
+        "name": "background",
+        "description": "选项是否带底色，false 时只剩圆圈和文字",
+        "type": "boolean",
+        "default": "true"
+      },
+      {
+        "name": "border",
+        "description": "选项是否带边框（含聚焦时的描边），false 时焦点提示落到圆圈上",
+        "type": "boolean",
+        "default": "true"
       }
     ],
     "events": [
@@ -5825,8 +5905,13 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "size",
-        "description": "星星尺寸，不传则用主题默认值（窄屏会自动放大）",
-        "type": "number"
+        "description": "星星尺寸：number 直接按 px（优先级最高）；small / default / large 走档位映射；不传时取全局配置（窄屏会自动放大）",
+        "type": "number | JeConfigSize"
+      },
+      {
+        "name": "color",
+        "description": "填充星星的颜色，传任意 CSS 颜色；不传时用主题的 warning 色",
+        "type": "string"
       }
     ],
     "events": [
@@ -6089,6 +6174,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "有内容时显示清除按钮",
         "type": "boolean",
         "default": "true"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "'small' | 'default' | 'large'"
       }
     ],
     "events": [
@@ -6150,6 +6240,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "撑满父级宽度",
         "type": "boolean",
         "default": "false"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "'small' | 'default' | 'large'"
       }
     ],
     "events": [
@@ -6186,6 +6281,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "是否禁用",
         "type": "boolean",
         "default": "false"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeSelectSize"
       },
       {
         "name": "teleportTo",
@@ -6406,9 +6506,14 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "height",
-        "description": "画布高度，数字按 px 处理",
+        "description": "画布高度，数字按 px 处理；显式传入时优先于 size 档位映射",
         "type": "number | string",
         "default": "200"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）；未显式传 height 时据此决定画布默认高度",
+        "type": "'small' | 'default' | 'large'"
       },
       {
         "name": "disabled",
@@ -6603,6 +6708,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "是否显示提示",
         "type": "boolean",
         "default": "true"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "'small' | 'default' | 'large'"
       }
     ],
     "events": [
@@ -6879,6 +6989,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "name": "beforeChange",
         "description": "变更前的拦截钩子，返回 false（或 resolve false）则不更新。\n支持异步，便于先弹确认框再决定是否改动。",
         "type": "(next: number, current: number) => boolean | Promise<boolean>"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "'small' | 'default' | 'large'"
       }
     ],
     "events": [
@@ -7225,6 +7340,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "是否处于加载中",
         "type": "boolean",
         "default": "false"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeSwitchSize"
       }
     ],
     "events": [
@@ -7514,8 +7634,7 @@ export const componentApi: Record<string, ComponentApi> = {
       {
         "name": "size",
         "description": "表格尺寸",
-        "type": "'small' | 'default' | 'large'",
-        "default": "'default'"
+        "type": "'small' | 'default' | 'large'"
       },
       {
         "name": "layout",
@@ -7940,8 +8059,7 @@ export const componentApi: Record<string, ComponentApi> = {
       {
         "name": "size",
         "description": "尺寸",
-        "type": "JeTagSize",
-        "default": "'default'"
+        "type": "JeTagSize"
       },
       {
         "name": "effect",
@@ -7994,8 +8112,7 @@ export const componentApi: Record<string, ComponentApi> = {
       {
         "name": "size",
         "description": "尺寸",
-        "type": "'small' | 'default' | 'large'",
-        "default": "'default'"
+        "type": "'small' | 'default' | 'large'"
       },
       {
         "name": "tag",
@@ -8056,6 +8173,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "是否禁用",
         "type": "boolean",
         "default": "false"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "'small' | 'default' | 'large'"
       },
       {
         "name": "teleportTo",
@@ -8126,6 +8248,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "name": "maxTime",
         "description": "可选上限（含）",
         "type": "string"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeTimeSelectSize"
       },
       {
         "name": "teleportTo",
@@ -8405,6 +8532,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "占位提示",
         "type": "string",
         "default": "'请输入搜索内容'"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeTransferSize"
       }
     ],
     "events": [
@@ -8549,6 +8681,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "description": "是否手风琴模式（同时只展开一个）",
         "type": "boolean",
         "default": "false"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeTreeSelectSize"
       },
       {
         "name": "teleportTo",
@@ -8737,6 +8874,11 @@ export const componentApi: Record<string, ComponentApi> = {
         "name": "teleportTo",
         "description": "浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退",
         "type": "JeTeleportTarget | false"
+      },
+      {
+        "name": "size",
+        "description": "尺寸，不传时取全局配置（configureJelly / JeConfigProvider）",
+        "type": "JeUploadSize"
       }
     ],
     "events": [

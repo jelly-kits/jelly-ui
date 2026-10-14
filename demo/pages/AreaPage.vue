@@ -89,6 +89,12 @@ const onChange = (values: (string | number)[]) => {
       <p class="hint">已选择：{{ area.join(' / ') || '（空）' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-area v-model="area" :area-list="areaList" size="large" />
+      <je-area v-model="area" :area-list="areaList" />
+      <je-area v-model="area" :area-list="areaList" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="事件回显" description="滚动停下触发 change，点确认触发 confirm，点取消或遮罩触发 cancel。">
       <je-area
         v-model="emptyArea"

@@ -40,6 +40,12 @@ const lastChange = ref('')
       <p class="state">当前值：{{ value ?? 'null' }}｜最近变化：{{ lastChange || '暂无' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-tree-select v-model="value" :data="treeData" size="large" />
+      <je-tree-select v-model="value" :data="treeData" />
+      <je-tree-select v-model="value" :data="treeData" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="已有默认值 + 手风琴展开">
       <je-tree-select v-model="fixed" :data="treeData" accordion />
       <p class="state">当前值：{{ fixed ?? 'null' }}</p>

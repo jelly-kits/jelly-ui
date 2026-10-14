@@ -43,6 +43,18 @@ const colorOf = (value: string | number | null) =>
       <p class="state">当前值：{{ city ?? 'null' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-field label="大尺寸">
+        <je-select v-model="city" :options="cities" size="large" />
+      </je-field>
+      <je-field label="默认尺寸">
+        <je-select v-model="city" :options="cities" />
+      </je-field>
+      <je-field label="小尺寸">
+        <je-select v-model="city" :options="cities" size="small" />
+      </je-field>
+    </DemoBlock>
+
     <DemoBlock title="禁用与已有值">
       <je-field label="已选城市">
         <je-select v-model="fixed" :options="cities" />

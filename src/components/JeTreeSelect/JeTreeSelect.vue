@@ -8,9 +8,9 @@ import { useSheetDrag } from '../../core/useSheetDrag'
 import { nextZIndex } from '../../core/useZIndex'
 import { JeIcon } from '../JeIcon'
 import { JeTree, type JeTreeNode } from '../JeTree'
-import type { JeTreeSelectValue } from './types'
+import type { JeTreeSelectSize, JeTreeSelectValue } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget, type JeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeTreeSelect' })
 
@@ -22,6 +22,8 @@ const props = withDefaults(
     disabled?: boolean
     clearable?: boolean
     accordion?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JeTreeSelectSize
     /** 浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退 */
     teleportTo?: JeTeleportTarget | false
   }>(),
@@ -31,9 +33,20 @@ const props = withDefaults(
     disabled: false,
     clearable: true,
     accordion: false,
+    size: undefined,
     teleportTo: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() =>
+  size.value === 'default' ? '' : `je-tree-select--${size.value}`,
+)
+
+/** 图标尺寸随档位缩放 */
+const CONTROL_ICON: Record<JeConfigSize, number> = { small: 12, default: 14, large: 16 }
+const iconSize = computed(() => CONTROL_ICON[size.value])
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
@@ -181,7 +194,7 @@ const onPanelKeydown = (event: KeyboardEvent) => {
   <div
     ref="rootRef"
     class="je-tree-select"
-    :class="{ 'is-open': isOpen, 'is-disabled': disabled }"
+    :class="[sizeClass, { 'is-open': isOpen, 'is-disabled': disabled }]"
     @keydown="onKeydown"
   >
     <div
@@ -204,10 +217,10 @@ const onPanelKeydown = (event: KeyboardEvent) => {
         aria-label="清除选择"
         @click.stop="clear"
       >
-        <JeIcon name="close" :size="14" />
+        <JeIcon name="close" :size="iconSize" />
       </button>
 
-      <span class="je-tree-select__arrow" aria-hidden="true" />
+      <JeIcon class="je-tree-select__arrow" name="chevron-down" :size="iconSize" />
     </div>
 
     <Teleport
@@ -256,9 +269,25 @@ const onPanelKeydown = (event: KeyboardEvent) => {
 
 <style scoped>
 .je-tree-select {
+  /* default 档直接引用全局控件 token，small / large 只覆盖这几个变量 */
+  --jtr-h: var(--je-control-h);
+  --jtr-px: var(--je-control-px);
+  --jtr-fs: var(--je-control-fs);
   position: relative;
   font-family: inherit;
   user-select: none;
+}
+
+.je-tree-select--small {
+  --jtr-h: var(--je-control-h-sm);
+  --jtr-px: var(--je-control-px-sm);
+  --jtr-fs: var(--je-control-fs-sm);
+}
+
+.je-tree-select--large {
+  --jtr-h: var(--je-control-h-lg);
+  --jtr-px: var(--je-control-px-lg);
+  --jtr-fs: var(--je-control-fs-lg);
 }
 
 .je-tree-select__trigger {
@@ -266,13 +295,13 @@ const onPanelKeydown = (event: KeyboardEvent) => {
   align-items: center;
   gap: 10px;
   box-sizing: border-box;
-  min-height: 44px;
-  padding: 12px 16px;
-  font-size: 15px;
+  height: var(--jtr-h);
+  padding: 0 var(--jtr-px);
+  font-size: var(--jtr-fs);
   color: var(--je-text-faint);
   background: var(--je-surface);
-  border: var(--je-border);
-  border-radius: var(--je-radius);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius);
   cursor: pointer;
   outline: none;
   transition: border-color var(--je-duration) ease, background var(--je-duration) ease,
@@ -320,23 +349,14 @@ const onPanelKeydown = (event: KeyboardEvent) => {
   background: var(--je-surface-hover);
 }
 
-/* 箭头是 CSS 画的小折角，展开时翻转 */
+/* 与其余选择器一致：chevron 图标随档位缩放，展开时翻转 */
 .je-tree-select__arrow {
   flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  margin-top: -4px;
-  border-right: 2px solid var(--je-text-faint);
-  border-bottom: 2px solid var(--je-text-faint);
-  transform: rotate(45deg);
-  transition: transform 0.4s var(--je-ease-overshoot), margin-top 0.4s var(--je-ease-overshoot),
-    border-color var(--je-duration) ease;
+  transition: transform var(--je-duration) ease;
 }
 
 .je-tree-select.is-open .je-tree-select__arrow {
-  margin-top: 4px;
-  border-color: var(--je-text);
-  transform: rotate(-135deg);
+  transform: rotate(180deg);
 }
 
 .je-tree-select.is-disabled .je-tree-select__trigger {
@@ -428,6 +448,25 @@ const onPanelKeydown = (event: KeyboardEvent) => {
   .je-tree-select__panel.is-open {
     transform: translateY(0);
     transition: transform 0.42s var(--je-ease-out-back), opacity 0.24s ease-out;
+  }
+
+  /* 触屏档：与 input / select / button 同一套三档，输入框高度与 select 对齐 */
+  .je-tree-select {
+    --jtr-h: var(--je-touch-h);
+    --jtr-px: var(--je-touch-px);
+    --jtr-fs: var(--je-touch-fs);
+  }
+
+  .je-tree-select--small {
+    --jtr-h: var(--je-touch-h-sm);
+    --jtr-px: var(--je-touch-px-sm);
+    --jtr-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-tree-select--large {
+    --jtr-h: var(--je-touch-h-lg);
+    --jtr-px: var(--je-touch-px-lg);
+    --jtr-fs: var(--je-touch-fs-lg);
   }
 }
 

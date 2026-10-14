@@ -12,7 +12,6 @@ import {
   JeSelect,
   JeSpace,
   JeSwitch,
-  JeText,
   type JeCheckboxOption,
   type JeFormLabelPosition,
   type JeFormRules,
@@ -91,7 +90,7 @@ const reset = () => {
 <template>
   <DemoPage
     title="Form 表单"
-    description="内置数据收集与规则校验：支持必填、长度、数值范围、正则与自定义校验器，失焦 / 值变化时自动触发。窄屏下标签一律堆叠到控件上方。"
+    description="内置数据收集与规则校验：支持必填、长度、数值范围、正则与自定义校验器，失焦 / 值变化时自动触发。"
   >
     <DemoBlock title="完整示例">
       <je-form
@@ -136,9 +135,43 @@ const reset = () => {
       <p v-if="message" class="state">{{ message }}</p>
     </DemoBlock>
 
-    <DemoBlock title="标签位置" description="窄屏下无论怎么选都会堆叠到上方。">
+    <DemoBlock title="尺寸" description="表单级默认尺寸，子控件不传 size 时继承它。">
+      <je-form :model="model" size="small">
+        <je-form-item label="姓名" prop="name">
+          <je-input v-model="model.name" placeholder="2 ~ 8 个字符" />
+        </je-form-item>
+        <je-form-item label="城市" prop="city">
+          <je-select v-model="model.city" :options="cities" />
+        </je-form-item>
+      </je-form>
+
+      <je-form :model="model" size="large">
+        <je-form-item label="姓名" prop="name">
+          <je-input v-model="model.name" placeholder="2 ~ 8 个字符" />
+        </je-form-item>
+        <je-form-item label="城市" prop="city">
+          <je-select v-model="model.city" :options="cities" />
+        </je-form-item>
+      </je-form>
+    </DemoBlock>
+
+    <DemoBlock title="标签位置" description="左 / 右标签按 label-width 对齐，移动端同样生效。">
       <je-segmented v-model="labelPositionValue" :options="labelPositions" block />
-      <je-text size="small">{{ model.name || '（姓名为空）' }}</je-text>
+
+      <je-form
+        class="label-position-form"
+        :model="model"
+        :label-position="labelPosition"
+        :label-width="96"
+      >
+        <je-form-item label="姓名" prop="name">
+          <je-input v-model="model.name" placeholder="2 ~ 8 个字符" />
+        </je-form-item>
+
+        <je-form-item label="城市" prop="city">
+          <je-select v-model="model.city" :options="cities" />
+        </je-form-item>
+      </je-form>
     </DemoBlock>
   </DemoPage>
 </template>
@@ -148,5 +181,10 @@ const reset = () => {
   margin: 12px 0 0;
   font-size: 13px;
   color: var(--je-text-muted);
+}
+
+/* 与上方的分段控件拉开间距，让它看起来是在控制这块表单 */
+.label-position-form {
+  margin-top: 16px;
 }
 </style>

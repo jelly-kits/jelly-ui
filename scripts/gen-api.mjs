@@ -142,6 +142,11 @@ export interface ApiRow {
   type?: string
   /** 默认值，仅属性有 */
   default?: string
+  /**
+   * 该成员从哪个版本开始提供，来自注释里的 @since x.y.z。
+   * 目前只做提取与留存，暂未参与渲染（详见 scripts/api-extract.mjs 的文件头说明）。
+   */
+  since?: string
 }
 
 export interface ComponentApi {

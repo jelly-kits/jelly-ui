@@ -5,9 +5,9 @@ import { useFocusTrap } from '../../core/useFocusTrap'
 import { useScrollLock } from '../../core/useScrollLock'
 import { useSheetDrag } from '../../core/useSheetDrag'
 import { nextZIndex } from '../../core/useZIndex'
-import type { JeAreaOption } from './types'
+import type { JeAreaOption, JeAreaSize } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeArea' })
 
@@ -32,6 +32,8 @@ const props = withDefaults(
     visibleItemCount?: number
     itemHeight?: number
     closeOnClickModal?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JeAreaSize
     /** 浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退 */
     teleportTo?: JeTeleportTarget | false
   }>(),
@@ -49,9 +51,18 @@ const props = withDefaults(
     visibleItemCount: 5,
     itemHeight: 44,
     closeOnClickModal: true,
+    size: undefined,
     teleportTo: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-area--${size.value}`))
+
+/** 下拉箭头随档位缩放 */
+const ICON_SIZE: Record<JeAreaSize, number> = { small: 14, default: 16, large: 18 }
+const iconSize = computed(() => ICON_SIZE[size.value])
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
@@ -263,7 +274,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="je-area" :class="{ 'is-open': isOpen, 'is-disabled': disabled }">
+  <div class="je-area" :class="[sizeClass, { 'is-open': isOpen, 'is-disabled': disabled }]">
     <button
       type="button"
       class="je-area__trigger"
@@ -274,7 +285,7 @@ onBeforeUnmount(() => {
       @click="toggle"
     >
       <span class="je-area__label">{{ triggerLabel || placeholder }}</span>
-      <JeIcon class="je-area__arrow" name="chevron-down" :size="16" />
+      <JeIcon class="je-area__arrow" name="chevron-down" :size="iconSize" />
     </button>
 
     <Teleport :to="teleportTarget === false ? 'body' : teleportTarget" :disabled="teleportTarget === false">
@@ -365,8 +376,24 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .je-area {
+  /* 触发器按输入框外观处理：default 档直接引用全局控件 token，small / large 只覆盖这几个变量 */
+  --ja-h: var(--je-control-h);
+  --ja-px: var(--je-control-px);
+  --ja-fs: var(--je-control-fs);
   position: relative;
   font-family: inherit;
+}
+
+.je-area--small {
+  --ja-h: var(--je-control-h-sm);
+  --ja-px: var(--je-control-px-sm);
+  --ja-fs: var(--je-control-fs-sm);
+}
+
+.je-area--large {
+  --ja-h: var(--je-control-h-lg);
+  --ja-px: var(--je-control-px-lg);
+  --ja-fs: var(--je-control-fs-lg);
 }
 
 .je-area__trigger {
@@ -376,13 +403,14 @@ onBeforeUnmount(() => {
   gap: 12px;
   box-sizing: border-box;
   width: 100%;
-  padding: 14px 16px;
+  height: var(--ja-h);
+  padding: 0 var(--ja-px);
   font-family: inherit;
-  font-size: 15px;
+  font-size: var(--ja-fs);
   color: var(--je-text-faint);
   background: var(--je-surface);
   border: var(--je-border);
-  border-radius: var(--je-radius);
+  border-radius: var(--je-control-radius);
   cursor: pointer;
   outline: none;
   transition: border-color var(--je-duration) ease, background var(--je-duration) ease,
@@ -629,6 +657,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   box-sizing: border-box;
   width: 100%;
+  min-height: var(--je-control-h);
   padding: 0 8px;
   overflow: hidden;
   font-family: inherit;
@@ -647,6 +676,32 @@ onBeforeUnmount(() => {
 .je-area__item.is-selected {
   font-weight: 700;
   color: var(--je-text);
+}
+
+/* 窄屏：触发框接触屏档（32 / 44 / 50），与输入框 / 选择器对齐 */
+@media (max-width: 768px) {
+  .je-area {
+    --ja-h: var(--je-touch-h);
+    --ja-px: var(--je-touch-px);
+    --ja-fs: var(--je-touch-fs);
+  }
+
+  .je-area--small {
+    --ja-h: var(--je-touch-h-sm);
+    --ja-px: var(--je-touch-px-sm);
+    --ja-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-area--large {
+    --ja-h: var(--je-touch-h-lg);
+    --ja-px: var(--je-touch-px-lg);
+    --ja-fs: var(--je-touch-fs-lg);
+  }
+
+  /* 滚轮行保持固定的 44px 触摸高度，不跟随尺寸档位 */
+  .je-area__item {
+    min-height: 44px;
+  }
 }
 
 /*

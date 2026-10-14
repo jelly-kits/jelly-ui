@@ -2,11 +2,23 @@ name: CI
 
 # PR 与 main 都跑：PR 上拦问题，main 上保证主干始终可发布。
 # 与 deploy-demo.yml 相互独立 —— 这里只校验，不发布。
+#
+# 纯文档改动（README / CONTRIBUTING 等）不跑：整条流水线要跑两次构建 + 三遍审计，
+# 改错别字付出这个代价没必要。判定口径是「本次 push / PR 涉及的文件全部命中忽略规则」
+# 才跳过 —— 只要夹带一个 .ts / .vue / .json，CI 照常跑。
+# 注意：仓库若给这些 check 设了 required，跳过时它们会停在 Pending 挡住合并，
+# 那种情况要改用提交信息里的 [skip ci]（同样能跳过，且是显式行为）。
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
 
 permissions:
   contents: read

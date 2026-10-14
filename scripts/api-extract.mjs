@@ -8,6 +8,10 @@
  *   - 插槽看 <slot name="x">，也看 $slots.x
  *
  * 说明文案一律优先取源码里的 JSDoc / HTML 注释，没写时回落到 api-glossary.mjs 的通用说明。
+ *
+ * 注释里可以写 `@since x.y.z` 标记该成员从哪个版本开始提供。这里只负责把它从说明正文里
+ * 摘出来、单独放进 since 字段，暂不参与渲染；等需要展示版本徽章时，直接在渲染层读 since 即可。
+ * 认的是行首或空白之后的 `@since`，所以说明正文里出现的单个 `@` 不会被误判成标签。
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -49,6 +53,25 @@ const leadingComment = (text, pos) => {
     .map((line) => line.replace(/^\s*\*\s?/, '').trimEnd())
     .join('\n')
     .trim()
+}
+
+/**
+ * 把注释放进 since 字段的 `@since x.y.z` 从正文里摘掉，剩下的才是说明文案。
+ *
+ * 匹配「行首或空白之后的 @since」，既能覆盖 JSDoc 里单独一行的写法，
+ * 也能覆盖插槽那种单行 HTML 注释里的尾巴；说明正文里出现的单个 `@` 不受影响。
+ * 版本号必须以数字（可带 v 前缀）开头，所以写漏版本号的 `@since 某个说明`
+ * 不会被吞掉，而是原样留在正文里，一眼能看出标错了。
+ */
+const splitSinceTag = (body) => {
+  const match = /(?:^|\s)@since\s+(v?\d[\w.-]*)/.exec(body)
+  if (!match) return { description: body, since: '' }
+  const description = (body.slice(0, match.index) + body.slice(match.index + match[0].length))
+    .split('\n')
+    .map((line) => line.replace(/^\s*\*\s?/, ''))
+    .join('\n')
+    .trim()
+  return { description, since: match[1] }
 }
 
 const propertyName = (node, sourceFile) => {
@@ -156,12 +179,14 @@ export const extractApi = (source, typeSources = []) => {
       if (!ts.isPropertySignature(member)) continue
       const name = propertyName(member, resolved.sourceFile)
       if (!name) continue
+      const { description, since } = splitSinceTag(
+        leadingComment(resolved.text, member.getStart(resolved.sourceFile)),
+      )
       attributes.push({
         name,
-        description:
-          leadingComment(resolved.text, member.getStart(resolved.sourceFile)) ||
-          describeAttribute(name),
+        description: description || describeAttribute(name),
         type: member.type ? member.type.getText(resolved.sourceFile) : undefined,
+        since: since || undefined,
       })
     }
   }
@@ -198,10 +223,12 @@ export const extractApi = (source, typeSources = []) => {
             }
           })
         }
+        const comment = splitSinceTag(leadingComment(script, member.getStart(sourceFile)))
         events.push({
           name,
-          description: leadingComment(script, member.getStart(sourceFile)) || describeEvent(name),
+          description: comment.description || describeEvent(name),
           type: `(${params.join(', ')}) => void`,
+          since: comment.since || undefined,
         })
         continue
       }
@@ -217,10 +244,12 @@ export const extractApi = (source, typeSources = []) => {
           const label = param.name.getText(sourceFile)
           return `${label}: ${param.type ? param.type.getText(sourceFile) : 'any'}`
         })
+        const comment = splitSinceTag(leadingComment(script, member.getStart(sourceFile)))
         events.push({
           name,
-          description: leadingComment(script, member.getStart(sourceFile)) || describeEvent(name),
+          description: comment.description || describeEvent(name),
           type: `(${params.join(', ')}) => void`,
+          since: comment.since || undefined,
         })
       }
     }
@@ -245,9 +274,11 @@ export const extractApi = (source, typeSources = []) => {
             if (!ts.isPropertyAssignment(prop) && !ts.isShorthandPropertyAssignment(prop)) continue
             const name = propertyName(prop, sourceFile)
             if (!name) continue
+            const comment = splitSinceTag(leadingComment(script, prop.getStart(sourceFile)))
             exposes.push({
               name,
-              description: leadingComment(script, prop.getStart(sourceFile)) || describeExpose(name),
+              description: comment.description || describeExpose(name),
+              since: comment.since || undefined,
             })
           }
         }
@@ -271,7 +302,10 @@ export const extractApi = (source, typeSources = []) => {
     const name = nameMatch ? nameMatch[1] : 'default'
     addSlot(name)
     const comment = adjacentComment(template, match.index, true)
-    if (comment && !slotDescriptions.has(name)) slotDescriptions.set(name, comment)
+    if (comment && !slotDescriptions.has(name)) {
+      const { description, since } = splitSinceTag(comment)
+      slotDescriptions.set(name, { description: description || describeSlot(name), since })
+    }
     const bindings = []
     for (const bind of attrs.matchAll(/:([A-Za-z_$][\w$]*)\s*=/g)) {
       if (bind[1] !== 'name' && bind[1] !== 'key') bindings.push(bind[1])
@@ -292,11 +326,15 @@ export const extractApi = (source, typeSources = []) => {
   return {
     attributes,
     events,
-    slots: slotNames.map((name) => ({
-      name,
-      description: slotDescriptions.get(name) || describeSlot(name),
-      type: slotProps.get(name),
-    })),
+    slots: slotNames.map((name) => {
+      const slot = slotDescriptions.get(name)
+      return {
+        name,
+        description: slot?.description || describeSlot(name),
+        type: slotProps.get(name),
+        since: slot?.since || undefined,
+      }
+    }),
     exposes,
   }
 }

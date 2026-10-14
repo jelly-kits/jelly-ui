@@ -7,7 +7,7 @@ import {
   type JeFormLabelPosition,
   type JeFormRules,
 } from '../../core/form'
-import { useIsMobile } from '../../core/useMediaQuery'
+import { jeConfigKey, useJeConfig, useJeConfigSize, type JeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeForm' })
 
@@ -17,18 +17,29 @@ const props = withDefaults(
     model: Record<string, unknown>
     /** 校验规则，键为字段路径 */
     rules?: JeFormRules
-    /** 标签位置；窄屏一律堆叠到控件上方 */
+    /** 标签位置：置顶 / 在左 / 在右，窄屏同样生效 */
     labelPosition?: JeFormLabelPosition
     /** 左 / 右标签的固定宽度，数字按 px 处理 */
     labelWidth?: string | number
     disabled?: boolean
+    /** 控件默认尺寸；下发给表单内的所有控件，控件自身的 size 仍然优先 */
+    size?: JeConfigSize
   }>(),
-  { rules: () => ({}), labelPosition: 'top', labelWidth: '', disabled: false },
+  { rules: () => ({}), labelPosition: 'top', labelWidth: '', disabled: false, size: undefined },
 )
 
 const emit = defineEmits<{ validate: [prop: string, valid: boolean, message: string] }>()
 
-const isMobile = useIsMobile()
+/*
+ * 表单级尺寸：套一层与 JeConfigProvider 等价的配置，让内部控件走同一条回退链。
+ * 控件自身 prop → 本表单 size → 外层 JeConfigProvider → configureJelly → 缺省。
+ */
+const parentConfig = useJeConfig()
+
+provide(jeConfigKey, {
+  size: useJeConfigSize(() => props.size),
+  teleportTo: parentConfig.teleportTo,
+})
 
 /** 深拷贝一个纯数据快照，供 resetFields 回滚 */
 const clone = <T,>(value: T): T => {
@@ -44,9 +55,7 @@ const clone = <T,>(value: T): T => {
 const initialModel = clone(props.model)
 const fields: JeFieldContext[] = []
 
-const labelPosition = computed<JeFormLabelPosition>(() =>
-  isMobile.value ? 'top' : props.labelPosition,
-)
+const labelPosition = computed(() => props.labelPosition)
 const labelWidth = computed(() =>
   typeof props.labelWidth === 'number' ? `${props.labelWidth}px` : props.labelWidth,
 )

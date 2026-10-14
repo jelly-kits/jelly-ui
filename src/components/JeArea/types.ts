@@ -7,3 +7,6 @@ export interface JeAreaOption {
   /** 下级数据 */
   children?: JeAreaOption[]
 }
+
+/** 触发器尺寸 */
+export type JeAreaSize = 'small' | 'default' | 'large'

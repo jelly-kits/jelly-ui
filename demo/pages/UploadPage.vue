@@ -131,6 +131,12 @@ const mockRequest = (options: JeUploadRequestOptions) => {
       </p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-upload v-model:file-list="basicList" action="/api/upload" size="large" />
+      <je-upload v-model:file-list="basicList" action="/api/upload" />
+      <je-upload v-model:file-list="basicList" action="/api/upload" size="small" />
+    </DemoBlock>
+
     <DemoBlock
       title="拖拽上传与数量限制"
       description="drag 打开拖拽区，limit 限制总数，超出时抛出 exceed 并且不会静默丢弃。窄屏仍可点击选择。"

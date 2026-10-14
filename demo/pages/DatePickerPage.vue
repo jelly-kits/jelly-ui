@@ -39,6 +39,18 @@ const show = (value: PickerValue) => {
       <p class="state">当前值：{{ show(date) }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-field label="选择日期">
+        <je-date-picker v-model="date" size="large" />
+      </je-field>
+      <je-field label="选择日期">
+        <je-date-picker v-model="date" />
+      </je-field>
+      <je-field label="选择日期">
+        <je-date-picker v-model="date" size="small" />
+      </je-field>
+    </DemoBlock>
+
     <DemoBlock
       title="日期时间"
       description="两步式：点日历里的某一天进入第二步，滚动时 / 分两列挑选，点「确定」才提交并收起，「上一步」可以回去改日期；中途不会往 v-model 写半成品。"

@@ -49,10 +49,64 @@
   --je-border: 1px solid rgba(15, 23, 42, 0.14);
   --je-border-color: rgba(15, 23, 42, 0.14);
 
-  /* 圆角 */
+  /* 圆角（容器 / 卡片 / 弹窗） */
   --je-radius-sm: 10px;
   --je-radius: 14px;
   --je-radius-lg: 16px;
+
+  /*
+   * 表单控件尺寸（PC 紧凑基准，参考 Element Plus：高度 32 / 24 / 40）。
+   * 三档取值 small / default / large，组件 default 档直接引用这里，
+   * 只有 small / large 才在自己身上覆盖。
+   *
+   * 与上面的 --je-radius-* 分开是有意的：控件收到 6px 变紧凑，
+   * 但卡片 / 弹窗仍保留 14px 的圆润品牌感。
+   */
+  --je-control-h-sm: 28px;
+  --je-control-h: 32px;
+  --je-control-h-lg: 40px;
+
+  --je-control-px-sm: 10px;
+  --je-control-px: 12px;
+  --je-control-px-lg: 16px;
+
+  --je-control-fs-sm: 13px;
+  --je-control-fs: 14px;
+  --je-control-fs-lg: 16px;
+
+  --je-control-radius-sm: 4px;
+  --je-control-radius: 6px;
+  --je-control-radius-lg: 8px;
+
+  --je-control-icon-sm: 12px;
+  --je-control-icon: 14px;
+  --je-control-icon-lg: 16px;
+
+  /*
+   * 触屏档（窄屏 / 触屏设备）。
+   * 口径对齐 Vant 4 的移动端尺寸：small 32 / default 44 / large 50，字号 12 / 14 / 16。
+   * default 的 44px 与 Vant 的 --van-button-default-height 一致；
+   * small 回到 32px（Vant 的 --van-button-small-height），不再被 44px 的触摸下限抬平，三档才拉得开。
+   *
+   * 组件在 @media (max-width: 768px) 里把本地变量（--ji-h / --js-h / --jb-h ...）
+   * 指到这里，所以「移动端多大」只在这一处定义，改尺寸不用再翻组件。
+   * 注意字号：输入类控件另有 16px 下限（低于 16px 时 iOS 聚焦会自动放大页面）。
+   */
+  --je-touch-h-sm: 32px;
+  --je-touch-h: 44px;
+  --je-touch-h-lg: 50px;
+
+  --je-touch-px-sm: 12px;
+  --je-touch-px: 15px;
+  --je-touch-px-lg: 18px;
+
+  --je-touch-fs-sm: 12px;
+  --je-touch-fs: 14px;
+  --je-touch-fs-lg: 16px;
+
+  --je-touch-radius-sm: 6px;
+  --je-touch-radius: 8px;
+  --je-touch-radius-lg: 10px;
 
   /* 阴影（中性） */
   --je-shadow-popup: 0 16px 48px rgba(15, 23, 42, 0.18);

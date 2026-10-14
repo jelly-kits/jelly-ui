@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { useJeConfigSize } from '../JeConfigProvider/types'
+
 defineOptions({ name: 'JeText' })
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     type?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
     size?: 'small' | 'default' | 'large'
@@ -11,8 +13,11 @@ withDefaults(
     /** 单行省略 */
     truncated?: boolean
   }>(),
-  { type: 'default', size: 'default', tag: 'span', bold: false, truncated: false },
+  { type: 'default', size: undefined, tag: 'span', bold: false, truncated: false },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
 </script>
 
 <template>

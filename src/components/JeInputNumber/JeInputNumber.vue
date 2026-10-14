@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { JeIcon } from '../JeIcon'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeInputNumber' })
 
@@ -16,6 +17,8 @@ const props = withDefaults(
     disabled?: boolean
     /** 是否显示加减按钮 */
     controls?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: 'small' | 'default' | 'large'
   }>(),
   {
     modelValue: null,
@@ -25,10 +28,21 @@ const props = withDefaults(
     placeholder: '',
     disabled: false,
     controls: true,
+    size: undefined,
   },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: number | null] }>()
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-number--${size.value}`))
+
+/** 加减按钮图标随尺寸缩放 */
+const ICON_SIZE: Record<'small' | 'default' | 'large', number> = { small: 12, default: 14, large: 16 }
+const iconSize = computed(() => ICON_SIZE[size.value])
 
 const decimalsOf = (value: number) => {
   const text = String(value)
@@ -104,7 +118,7 @@ const atMax = computed(() => typeof props.modelValue === 'number' && props.model
 <template>
   <div
     class="je-number"
-    :class="{ 'is-disabled': disabled, 'has-controls': controls }"
+    :class="[sizeClass, { 'is-disabled': disabled, 'has-controls': controls }]"
   >
     <button
       v-if="controls"
@@ -114,7 +128,7 @@ const atMax = computed(() => typeof props.modelValue === 'number' && props.model
       aria-label="减少"
       @click="stepBy(-1)"
     >
-      <JeIcon name="minus" :size="14" />
+      <JeIcon name="minus" :size="iconSize" />
     </button>
 
     <input
@@ -142,22 +156,39 @@ const atMax = computed(() => typeof props.modelValue === 'number' && props.model
       aria-label="增加"
       @click="stepBy(1)"
     >
-      <JeIcon name="plus" :size="14" />
+      <JeIcon name="plus" :size="iconSize" />
     </button>
   </div>
 </template>
 
 <style scoped>
 .je-number {
+  /* default 档直接引用全局控件 token，small / large 只覆盖这几个变量 */
+  --jn-h: var(--je-control-h);
+  --jn-input-fs: var(--je-control-fs);
+  --jn-btn-w: 36px;
   display: flex;
   align-items: stretch;
   box-sizing: border-box;
+  height: var(--jn-h);
   overflow: hidden;
   background: var(--je-surface);
-  border: 1.5px solid var(--je-border-color);
-  border-radius: var(--je-radius);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius);
   transition: border-color var(--je-duration) ease, background var(--je-duration) ease,
     box-shadow var(--je-duration) ease;
+}
+
+.je-number--small {
+  --jn-h: var(--je-control-h-sm);
+  --jn-input-fs: var(--je-control-fs-sm);
+  --jn-btn-w: 30px;
+}
+
+.je-number--large {
+  --jn-h: var(--je-control-h-lg);
+  --jn-input-fs: var(--je-control-fs-lg);
+  --jn-btn-w: 44px;
 }
 
 .je-number:focus-within {
@@ -169,9 +200,9 @@ const atMax = computed(() => typeof props.modelValue === 'number' && props.model
 .je-number__input {
   flex: 1 1 auto;
   min-width: 0;
-  padding: 14px 12px;
+  padding: 0 12px;
   font-family: inherit;
-  font-size: 15px;
+  font-size: var(--jn-input-fs, var(--je-control-fs));
   color: var(--je-text);
   text-align: center;
   background: none;
@@ -188,7 +219,7 @@ const atMax = computed(() => typeof props.modelValue === 'number' && props.model
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 44px;
+  width: var(--jn-btn-w, 44px);
   font-family: inherit;
   font-size: 16px;
   color: var(--je-text-muted);
@@ -219,14 +250,29 @@ const atMax = computed(() => typeof props.modelValue === 'number' && props.model
   opacity: 0.5;
 }
 
-/* 窄屏放大热区，保证单指点击不误触 */
+/* 窄屏：与 input / select / button 同一套触屏档，保证同一表单行内等高 */
 @media (max-width: 768px) {
-  .je-number__input {
-    padding: 15px 10px;
+  .je-number {
+    --jn-h: var(--je-touch-h);
+    --jn-btn-w: 48px;
+    /* 字号取触屏档与 16px 的较大值：低于 16px 时 iOS 聚焦会自动放大页面 */
+    --jn-input-fs: max(16px, var(--je-touch-fs));
   }
 
-  .je-number__btn {
-    width: 48px;
+  .je-number--small {
+    --jn-h: var(--je-touch-h-sm);
+    --jn-btn-w: 44px;
+    --jn-input-fs: max(16px, var(--je-touch-fs-sm));
+  }
+
+  .je-number--large {
+    --jn-h: var(--je-touch-h-lg);
+    --jn-btn-w: 52px;
+    --jn-input-fs: max(16px, var(--je-touch-fs-lg));
+  }
+
+  .je-number__input {
+    padding: 0 10px;
   }
 }
 </style>

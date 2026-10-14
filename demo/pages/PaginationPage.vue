@@ -33,14 +33,14 @@ const disabled = ref(1)
       <p class="state">第 {{ full }} 页 · 每页 {{ fullSize }} 条</p>
     </DemoBlock>
 
-    <DemoBlock title="尺寸与折叠">
+    <DemoBlock title="尺寸与折叠" description="small 档在窄屏同样生效（窄屏 small 32px、默认 44px）。">
       <je-pagination v-model="simple" :total="300" small background />
       <je-pagination v-model="full" :total="1000" :pager-count="5" />
     </DemoBlock>
 
     <DemoBlock
       title="禁用与单页隐藏"
-      description="窄屏下会精简为上一页 / 当前页 / 下一页，热区保持不小于 44px。"
+      description="窄屏下会精简为上一页 / 当前页 / 下一页。"
     >
       <je-pagination v-model="disabled" :total="120" disabled />
       <je-pagination :total="8" hide-on-single-page />

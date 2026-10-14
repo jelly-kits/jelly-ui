@@ -1,6 +1,9 @@
 /** 日期选择器的形态：单个日期 / 日期时间 / 日期区间 */
 export type JeDatePickerType = 'date' | 'datetime' | 'daterange'
 
+/** 触发器尺寸 */
+export type JeDatePickerSize = 'small' | 'default' | 'large'
+
 /** 单值形态的绑定值 */
 export type JeDatePickerValue = Date | string | null
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeSlider' })
 
@@ -12,11 +13,17 @@ const props = withDefaults(
     step?: number
     disabled?: boolean
     showTooltip?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: 'small' | 'default' | 'large'
   }>(),
-  { modelValue: 0, min: 0, max: 100, step: 1, disabled: false, showTooltip: true },
+  { modelValue: 0, min: 0, max: 100, step: 1, disabled: false, showTooltip: true, size: undefined },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: number | number[]] }>()
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-slider--${size.value}`))
 
 const rootRef = ref<HTMLElement | null>(null)
 const trackRef = ref<HTMLElement | null>(null)
@@ -155,7 +162,7 @@ const format = (value: number) => String(round(value))
   <div
     ref="rootRef"
     class="je-slider"
-    :class="{ 'is-disabled': disabled, 'is-range': isRange }"
+    :class="[sizeClass, { 'is-disabled': disabled, 'is-range': isRange }]"
     @pointermove="onPointerMove"
     @pointerup="endDrag"
     @pointercancel="endDrag"
@@ -193,6 +200,10 @@ const format = (value: number) => String(round(value))
 
 <style scoped>
 .je-slider {
+  /* 尺寸只改这三个变量，default 不产生类名（基础样式即 default） */
+  --je-slider-track-h: 4px;
+  --je-slider-thumb: 18px;
+  --je-slider-tooltip-fs: 12px;
   box-sizing: border-box;
   width: 100%;
   padding: 12px 0;
@@ -204,7 +215,7 @@ const format = (value: number) => String(round(value))
 .je-slider__track {
   position: relative;
   width: 100%;
-  height: 6px;
+  height: var(--je-slider-track-h, 6px);
   background: var(--je-surface);
   border-radius: 999px;
   cursor: pointer;
@@ -223,8 +234,8 @@ const format = (value: number) => String(round(value))
   position: absolute;
   top: 50%;
   box-sizing: border-box;
-  width: 20px;
-  height: 20px;
+  width: var(--je-slider-thumb, 20px);
+  height: var(--je-slider-thumb, 20px);
   padding: 0;
   background: #fff;
   border: 2px solid var(--je-primary);
@@ -265,7 +276,7 @@ const format = (value: number) => String(round(value))
   position: absolute;
   bottom: calc(100% + 12px);
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: var(--je-slider-tooltip-fs, 12px);
   color: var(--je-text);
   background: var(--je-popup);
   border: var(--je-border);
@@ -287,14 +298,37 @@ const format = (value: number) => String(round(value))
   cursor: not-allowed;
 }
 
+/* 小号：轨道约 default 的 2/3、滑块约 3/4 */
+.je-slider--small {
+  --je-slider-track-h: 4px;
+  --je-slider-thumb: 16px;
+  --je-slider-tooltip-fs: 11px;
+}
+
+/* 大号：轨道约 default 的 1.5 倍、滑块约 1.25 倍 */
+.je-slider--large {
+  --je-slider-track-h: 6px;
+  --je-slider-thumb: 20px;
+  --je-slider-tooltip-fs: 13px;
+}
+
 @media (max-width: 768px) {
-  .je-slider__track {
-    height: 8px;
+  /* 窄屏整体放大触摸目标，但三档仍然拉得开 */
+  .je-slider {
+    --je-slider-track-h: 8px;
+    --je-slider-thumb: 24px;
   }
 
-  .je-slider__thumb {
-    width: 24px;
-    height: 24px;
+  .je-slider--small {
+    --je-slider-track-h: 6px;
+    --je-slider-thumb: 20px;
+    --je-slider-tooltip-fs: 11px;
+  }
+
+  .je-slider--large {
+    --je-slider-track-h: 10px;
+    --je-slider-thumb: 28px;
+    --je-slider-tooltip-fs: 14px;
   }
 }
 

@@ -22,10 +22,11 @@ import type {
   JeUploadProgressEvent,
   JeUploadRequestHandler,
   JeUploadRequestOptions,
+  JeUploadSize,
   JeUploadStatus,
 } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeUpload' })
 
@@ -89,6 +90,8 @@ const props = withDefaults(
     onExceed?: JeUploadOnExceed
     /** 浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退 */
     teleportTo?: JeTeleportTarget | false
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JeUploadSize
   }>(),
   {
     fileList: () => [],
@@ -112,8 +115,13 @@ const props = withDefaults(
     showPreview: false,
     listClass: '',
     teleportTo: undefined,
+    size: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-upload--${size.value}`))
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
@@ -757,6 +765,7 @@ defineExpose({
     class="je-upload"
     :class="[
       `je-upload--${listType}`,
+      sizeClass,
       listClass,
       { 'is-disabled': disabled, 'is-dragging': dragging, 'has-drag': drag },
     ]"
@@ -989,8 +998,35 @@ defineExpose({
 
 <style scoped>
 .je-upload {
+  /* 尺寸只改这几个变量，default 不产生类名（基础样式即 default） */
+  --je-upload-trigger-h: var(--je-control-h);
+  --je-upload-trigger-px: 16px;
+  --je-upload-trigger-fs: var(--je-control-fs);
+  --je-upload-item-h: var(--je-control-h);
+  --je-upload-item-px: var(--je-control-px);
+  --je-upload-item-fs: var(--je-control-fs);
   font-family: inherit;
   font-size: 14px;
+}
+
+/* 小号：触发区与列表项各缩一档 */
+.je-upload--small {
+  --je-upload-trigger-h: var(--je-control-h-sm);
+  --je-upload-trigger-px: 12px;
+  --je-upload-trigger-fs: var(--je-control-fs-sm);
+  --je-upload-item-h: 24px;
+  --je-upload-item-px: 8px;
+  --je-upload-item-fs: var(--je-control-fs-sm);
+}
+
+/* 大号：触发区与列表项各放大一档 */
+.je-upload--large {
+  --je-upload-trigger-h: var(--je-control-h-lg);
+  --je-upload-trigger-px: 20px;
+  --je-upload-trigger-fs: var(--je-control-fs-lg);
+  --je-upload-item-h: var(--je-control-h-lg);
+  --je-upload-item-px: var(--je-control-px-lg);
+  --je-upload-item-fs: var(--je-control-fs-lg);
 }
 
 .je-upload__input {
@@ -1055,14 +1091,15 @@ defineExpose({
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 18px;
+  height: var(--je-upload-trigger-h, 32px);
+  padding: 0 var(--je-upload-trigger-px, 16px);
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--je-upload-trigger-fs, 14px);
   font-weight: 600;
   color: var(--je-text);
   background: var(--je-surface);
-  border: var(--je-border);
-  border-radius: var(--je-radius);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius);
   cursor: pointer;
   outline: none;
   transition: background var(--je-duration) ease, box-shadow var(--je-duration) ease;
@@ -1111,10 +1148,11 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
+  min-height: var(--je-upload-item-h, 32px);
+  padding: 0 var(--je-upload-item-px, 12px);
   background: var(--je-surface);
   border: var(--je-border);
-  border-radius: var(--je-radius-sm);
+  border-radius: var(--je-control-radius-sm);
 }
 
 .je-upload__thumb-wrap {
@@ -1153,7 +1191,7 @@ defineExpose({
   overflow: hidden;
   padding: 0;
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--je-upload-item-fs, 14px);
   color: var(--je-text);
   text-align: left;
   text-overflow: ellipsis;
@@ -1251,7 +1289,7 @@ defineExpose({
 /* ---------------- picture：图文列表 ---------------- */
 
 .je-upload__list--picture .je-upload__item {
-  padding: 6px 10px;
+  padding: 0 var(--je-upload-item-px, 12px);
 }
 
 /* ---------------- picture-card：照片墙 ---------------- */
@@ -1518,21 +1556,48 @@ defineExpose({
   outline-offset: 2px;
 }
 
-/* 窄屏：热区不小于 44px，浮层按钮上移避开底部安全区 */
+/* 窄屏：触发区 / 列表项接触屏档（32 / 44 / 50），浮层按钮上移避开底部安全区 */
 @media (max-width: 768px) {
+  .je-upload {
+    --je-upload-trigger-h: var(--je-touch-h);
+    --je-upload-trigger-px: var(--je-touch-px);
+    --je-upload-trigger-fs: var(--je-touch-fs);
+    --je-upload-item-h: var(--je-touch-h);
+    --je-upload-item-px: var(--je-touch-px);
+    --je-upload-item-fs: var(--je-touch-fs);
+  }
+
+  .je-upload--small {
+    --je-upload-trigger-h: var(--je-touch-h-sm);
+    --je-upload-trigger-px: var(--je-touch-px-sm);
+    --je-upload-trigger-fs: var(--je-touch-fs-sm);
+    --je-upload-item-h: var(--je-touch-h-sm);
+    --je-upload-item-px: var(--je-touch-px-sm);
+    --je-upload-item-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-upload--large {
+    --je-upload-trigger-h: var(--je-touch-h-lg);
+    --je-upload-trigger-px: var(--je-touch-px-lg);
+    --je-upload-trigger-fs: var(--je-touch-fs-lg);
+    --je-upload-item-h: var(--je-touch-h-lg);
+    --je-upload-item-px: var(--je-touch-px-lg);
+    --je-upload-item-fs: var(--je-touch-fs-lg);
+  }
+
   .je-upload__dropzone {
     min-height: 44px;
     padding: 24px 16px;
   }
 
-  .je-upload__trigger,
-  .je-upload__name,
-  .je-upload__remove {
-    min-height: 44px;
+  /* 文件名跟着行高撑满整行，整行都可点；删除按钮同理，避免把行撑高 */
+  .je-upload__name {
+    min-height: var(--je-upload-item-h, 32px);
   }
 
   .je-upload__remove {
     width: 44px;
+    height: var(--je-upload-item-h, 32px);
   }
 
   .je-upload__thumb-wrap {

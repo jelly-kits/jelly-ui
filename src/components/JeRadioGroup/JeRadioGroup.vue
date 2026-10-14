@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
-import type { JeRadioOption } from './types'
+import { useJeConfigSize } from '../JeConfigProvider/types'
+import type { JeRadioGroupSize, JeRadioOption } from './types'
 
 defineOptions({ name: 'JeRadioGroup' })
 
@@ -11,11 +12,23 @@ const props = withDefaults(
     /** 原生 radio 的 name，不传则自动生成 */
     name?: string
     disabled?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JeRadioGroupSize
+    /** 选项是否带底色，false 时只剩圆圈和文字 */
+    background?: boolean
+    /** 选项是否带边框（含聚焦时的描边），false 时焦点提示落到圆圈上 */
+    border?: boolean
   }>(),
-  { modelValue: null, disabled: false },
+  { modelValue: null, disabled: false, size: undefined, background: true, border: true },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: string | number] }>()
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-radio-group--${size.value}`))
 
 const uid = useId()
 const groupName = computed(() => props.name ?? `je-radio-${uid}`)
@@ -40,7 +53,14 @@ const select = (option: JeRadioOption, event: Event) => {
 </script>
 
 <template>
-  <div class="je-radio-group" :class="{ 'is-disabled': disabled }" role="radiogroup">
+  <div
+    class="je-radio-group"
+    :class="[
+      sizeClass,
+      { 'is-disabled': disabled, 'is-no-background': !background, 'is-no-border': !border },
+    ]"
+    role="radiogroup"
+  >
     <label v-for="option in options" :key="option.value" class="je-radio">
       <input
         class="je-radio__input"
@@ -59,17 +79,46 @@ const select = (option: JeRadioOption, event: Event) => {
 
 <style scoped>
 .je-radio-group {
+  /* 尺寸变量：default 为基础值，修饰类只覆盖这几个变量 */
+  --je-rg-h: var(--je-control-h);
+  --je-rg-row-px: 12px;
+  --je-rg-gap: 12px;
+  --je-rg-circle: 18px;
+  --je-rg-dot: 8px;
+  --je-rg-fs: var(--je-control-fs);
+  /* 宽屏一行排多个，放不下自动换行，不浪费右侧空白 */
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
+}
+
+.je-radio-group--small {
+  --je-rg-h: var(--je-control-h-sm);
+  --je-rg-row-px: 10px;
+  --je-rg-gap: 10px;
+  --je-rg-circle: 16px;
+  --je-rg-dot: 7px;
+  --je-rg-fs: var(--je-control-fs-sm);
+}
+
+.je-radio-group--large {
+  --je-rg-h: var(--je-control-h-lg);
+  --je-rg-row-px: 14px;
+  --je-rg-gap: 14px;
+  --je-rg-circle: 20px;
+  --je-rg-dot: 9px;
+  --je-rg-fs: var(--je-control-fs-lg);
 }
 
 .je-radio {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: var(--je-rg-gap, 12px);
+  box-sizing: border-box;
+  min-height: var(--je-rg-h, 32px);
+  padding: 0 var(--je-rg-row-px, 14px);
   background: var(--je-surface);
   border: 1.5px solid transparent;
   border-radius: 12px;
@@ -101,8 +150,8 @@ const select = (option: JeRadioOption, event: Event) => {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 22px;
-  height: 22px;
+  width: var(--je-rg-circle, 22px);
+  height: var(--je-rg-circle, 22px);
   border: 2px solid var(--je-border-color);
   border-radius: 50%;
   transition: border-color 0.25s ease, background 0.25s ease;
@@ -111,8 +160,8 @@ const select = (option: JeRadioOption, event: Event) => {
 
 .je-radio__circle::after {
   content: '';
-  width: 10px;
-  height: 10px;
+  width: var(--je-rg-dot, 10px);
+  height: var(--je-rg-dot, 10px);
   /* 只在选中时出现，压在品牌渐变上，固定浅色 */
   background: var(--je-text-on-color);
   border-radius: 50%;
@@ -130,7 +179,7 @@ const select = (option: JeRadioOption, event: Event) => {
 }
 
 .je-radio__label {
-  font-size: 14px;
+  font-size: var(--je-rg-fs, 14px);
   color: var(--je-text-muted);
   transition: color 0.25s ease;
 }
@@ -145,9 +194,56 @@ const select = (option: JeRadioOption, event: Event) => {
   opacity: 0.5;
 }
 
+/* 去掉底色：选项不再是一块圆角底色，hover 也不加，只留圆圈和文字 */
+.je-radio-group.is-no-background .je-radio,
+.je-radio-group.is-no-background .je-radio:hover {
+  background: transparent;
+}
+
+/*
+ * 去掉边框：外框本就只在聚焦时显色，这里把它彻底让出去；
+ * 键盘聚焦的提示落到圆圈上（用 focus-visible，鼠标点选不会留下痕迹）。
+ */
+.je-radio-group.is-no-border .je-radio:focus-within {
+  border-color: transparent;
+}
+
+.je-radio-group.is-no-border .je-radio__input:focus-visible + .je-radio__circle {
+  outline: 2px solid var(--je-primary);
+  outline-offset: 2px;
+}
+
 /* 选中时 1 → 1.35 → 1，两段都走减速曲线，合起来就是弹簧的「弹一下再落稳」 */
 .je-radio__circle.is-popping {
   animation: je-radio-pop 0.6s;
+}
+
+/* 窄屏：行高接同一套触屏档（40 / 44 / 48），与 input / select / button 同行时不会高低不齐 */
+@media (max-width: 768px) {
+  .je-radio-group {
+    /* 窄屏同样一行多个：文字不多时并排，放不下自动换行 */
+    --je-rg-h: var(--je-touch-h);
+    --je-rg-row-px: var(--je-touch-px);
+    --je-rg-circle: 20px;
+    --je-rg-dot: 9px;
+    --je-rg-fs: var(--je-touch-fs);
+  }
+
+  .je-radio-group--small {
+    --je-rg-h: var(--je-touch-h-sm);
+    --je-rg-row-px: var(--je-touch-px-sm);
+    --je-rg-circle: 18px;
+    --je-rg-dot: 8px;
+    --je-rg-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-radio-group--large {
+    --je-rg-h: var(--je-touch-h-lg);
+    --je-rg-row-px: var(--je-touch-px-lg);
+    --je-rg-circle: 22px;
+    --je-rg-dot: 10px;
+    --je-rg-fs: var(--je-touch-fs-lg);
+  }
 }
 
 @keyframes je-radio-pop {

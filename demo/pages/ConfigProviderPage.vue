@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { JeActionBarButton, JeButton, JeConfigProvider, JeDialog } from '@jelly-kits/jelly-ui'
+import { JeActionBarButton, JeButton, JeConfigProvider, JeDialog, JeInput, JeSwitch } from '@jelly-kits/jelly-ui'
 import DemoBlock from '../components/DemoBlock.vue'
 import DemoPage from '../components/DemoPage.vue'
 
@@ -12,6 +12,10 @@ const theme = {
 
 /** teleportTo 演示的开关 */
 const mountedDialog = ref(false)
+
+/** 子树尺寸演示的受控值 */
+const sizesText = ref('')
+const sizesOn = ref(true)
 
 /*
  * 挂载点盒子由本页自己渲染，而 Teleport 只在挂载那一刻解析一次选择器 —— 同一个组件里
@@ -78,15 +82,16 @@ const teleportReadSnippet = [
 
     <DemoBlock
       title="子树默认尺寸（size）"
-      description="size 作为子树缺省值下发，会读取配置的组件（如 ActionBarButton）自动跟随；组件自身传了 size 时以自身为准。要设应用级缺省（全站生效）用 configureJelly({ size: 'small' })。"
+      description="size 作为子树缺省值下发，带尺寸的表单控件（输入框、选择器、日期选择器、单/多选框、开关、按钮…）都会自动跟随；组件自身传了 size 时以自身为准。要设应用级缺省（全站生效）用 configureJelly({ size: 'small' })。"
     >
       <div class="sizes">
         <div class="sizes__col">
           <span class="sizes__label">size="small"</span>
           <je-config-provider size="small">
-            <div class="sizes__row">
-              <je-action-bar-button text="跟随全局" />
-              <je-action-bar-button text="自身 large" size="large" />
+            <div class="sizes__stack">
+              <je-input v-model="sizesText" placeholder="跟随全局尺寸" />
+              <je-switch v-model="sizesOn" />
+              <je-button type="primary">跟随全局尺寸</je-button>
             </div>
           </je-config-provider>
         </div>
@@ -94,9 +99,10 @@ const teleportReadSnippet = [
         <div class="sizes__col">
           <span class="sizes__label">size="large"</span>
           <je-config-provider size="large">
-            <div class="sizes__row">
-              <je-action-bar-button text="跟随全局" />
-              <je-action-bar-button text="自身 default" size="default" />
+            <div class="sizes__stack">
+              <je-input v-model="sizesText" placeholder="跟随全局尺寸" />
+              <je-switch v-model="sizesOn" />
+              <je-button type="primary">跟随全局尺寸</je-button>
             </div>
           </je-config-provider>
         </div>
@@ -215,6 +221,13 @@ const teleportReadSnippet = [
 .sizes__row,
 .nest__row {
   display: flex;
+  gap: 10px;
+}
+
+/* 尺寸演示需要纵向排布，控件拉满一列宽度才看得出档位差异 */
+.sizes__stack {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 

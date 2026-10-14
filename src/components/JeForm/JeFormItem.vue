@@ -9,6 +9,7 @@ import {
   type JeFormRule,
   type JeFormTrigger,
 } from '../../core/form'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeFormItem' })
 
@@ -51,6 +52,11 @@ const width = computed(() => {
   const raw = props.labelWidth ?? form?.labelWidth.value ?? ''
   return typeof raw === 'number' ? `${raw}px` : raw
 })
+
+/** 尺寸档位：本组件没有 size prop，只跟随 JeForm / JeConfigProvider 下发的档位 */
+const size = useJeConfigSize(() => undefined)
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-form-item--${size.value}`))
 
 /** 返回错误文案，null 表示通过 */
 const validate = async (trigger?: JeFormTrigger): Promise<string | null> => {
@@ -108,6 +114,7 @@ const onChange = () => {
     class="je-form-item"
     :class="[
       `is-label-${labelPosition}`,
+      sizeClass,
       {
         'is-required': isRequired,
         'is-error': state === 'error',
@@ -137,20 +144,39 @@ const onChange = () => {
 
 <style scoped>
 .je-form-item {
-  margin-bottom: 22px;
+  /* default 档直接引用全局控件 token，small / large 只覆盖这几个变量 */
+  --je-form-label-fs: var(--je-control-fs);
+  --je-form-label-gap: 10px;
+  --je-form-label-pt: 8px;
+  --je-form-item-mb: 22px;
+  margin-bottom: var(--je-form-item-mb);
+}
+
+.je-form-item--small {
+  --je-form-label-fs: var(--je-control-fs-sm);
+  --je-form-label-gap: 8px;
+  --je-form-label-pt: 6px;
+  --je-form-item-mb: 18px;
+}
+
+.je-form-item--large {
+  --je-form-label-fs: var(--je-control-fs-lg);
+  --je-form-label-gap: 12px;
+  --je-form-label-pt: 10px;
+  --je-form-item-mb: 26px;
 }
 
 .je-form-item__label {
-  font-size: 13px;
+  font-size: var(--je-form-label-fs);
   font-weight: 500;
   color: var(--je-text-muted);
   transition: color var(--je-duration) ease, transform 0.4s var(--je-ease-overshoot);
 }
 
-/* 标签堆叠在控件上方（窄屏统一走这一形态） */
+/* 标签堆叠在控件上方 */
 .je-form-item.is-label-top > .je-form-item__label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: var(--je-form-label-gap);
 }
 
 /* 左右标签：标签与内容并排 */
@@ -164,7 +190,7 @@ const onChange = () => {
 .je-form-item.is-label-left > .je-form-item__label,
 .je-form-item.is-label-right > .je-form-item__label {
   flex: 0 0 auto;
-  padding-top: 15px;
+  padding-top: var(--je-form-label-pt);
   line-height: 1.2;
 }
 

@@ -1,2 +1,2 @@
 export { default as JeRadioGroup } from './JeRadioGroup.vue'
-export type { JeRadioOption } from './types'
+export type { JeRadioGroupSize, JeRadioOption } from './types'

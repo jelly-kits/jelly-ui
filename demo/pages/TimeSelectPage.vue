@@ -26,6 +26,12 @@ const onChange = (value: string) => {
       <p class="state">当前值：{{ time || 'null' }} · change 事件：{{ changed || '未触发' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-time-select v-model="time" size="large" />
+      <je-time-select v-model="time" />
+      <je-time-select v-model="time" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="自定义范围与步长" description="step 设为 00:15，并用 minTime / maxTime 限制可选区间。">
       <je-field label="预约时间">
         <je-time-select v-model="limited" start="09:00" end="18:00" step="00:15" min-time="10:00" max-time="16:00" />

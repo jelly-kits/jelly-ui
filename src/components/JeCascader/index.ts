@@ -1,2 +1,2 @@
 export { default as JeCascader } from './JeCascader.vue'
-export type { JeCascaderOption, JeCascaderValue } from './types'
+export type { JeCascaderOption, JeCascaderSize, JeCascaderValue } from './types'

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JePasswordInput' })
 
@@ -14,6 +15,8 @@ const props = withDefaults(
     mask?: boolean
     /** 格子之间的间距，传数字按 px 处理 */
     gutter?: number | string
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider）；只缩放格子自身的尺寸与字号，不影响 gutter */
+    size?: 'small' | 'default' | 'large'
     /** 下方说明文字 */
     info?: string
     /** 传了即进入错误态：覆盖 info 文案，并抖动一次提醒 */
@@ -47,6 +50,7 @@ const props = withDefaults(
     length: 6,
     mask: true,
     gutter: 0,
+    size: undefined,
     info: '',
     errorInfo: '',
     focused: false,
@@ -76,6 +80,12 @@ const emit = defineEmits<{
   /** 输入位数达到 length 时触发，可用于自动提交 */
   complete: [value: string]
 }>()
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-password--${size.value}`))
 
 const inputRef = useTemplateRef<HTMLInputElement>('inputRef')
 /**
@@ -267,11 +277,14 @@ defineExpose({
 <template>
   <div
     class="je-password"
-    :class="{
-      'is-focused': active,
-      'is-error': !!errorInfo,
-      'is-disabled': disabled,
-    }"
+    :class="[
+      sizeClass,
+      {
+        'is-focused': active,
+        'is-error': !!errorInfo,
+        'is-disabled': disabled,
+      },
+    ]"
     :style="rootStyle"
   >
     <div class="je-password__cells" :class="{ 'has-gutter': hasGutter }" @click="onCellClick">
@@ -342,6 +355,25 @@ defineExpose({
    * （与 JeNumberKeyboard 里 --je-number-keyboard-safe-bottom 的做法一致）。
    */
   --je-password-safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* 格子尺寸变量：default 为基础值，修饰类只覆盖这几个变量 */
+  --je-password-cell-h: 48px;
+  --je-password-cell-min-w: 0px;
+  --je-password-cell-fs: 18px;
+  --je-password-dot-size: 7px;
+}
+
+.je-password--small {
+  --je-password-cell-h: 42px;
+  --je-password-cell-min-w: 32px;
+  --je-password-cell-fs: 16px;
+  --je-password-dot-size: 6px;
+}
+
+.je-password--large {
+  --je-password-cell-h: 56px;
+  --je-password-cell-min-w: 48px;
+  --je-password-cell-fs: 21px;
+  --je-password-dot-size: 8px;
 }
 
 .je-password__cells {
@@ -351,7 +383,7 @@ defineExpose({
   cursor: text;
   background: var(--je-surface);
   border: 1px solid var(--je-border-color);
-  border-radius: var(--je-radius);
+  border-radius: var(--je-control-radius);
   transition: border-color var(--je-duration) ease;
 }
 
@@ -369,8 +401,8 @@ defineExpose({
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-width: 0;
-  height: 48px;
+  min-width: var(--je-password-cell-min-w, 0px);
+  height: var(--je-password-cell-h, 48px);
 }
 
 /* gutter 为 0 时相邻格子共用一条描边，避免叠成 2px */
@@ -381,7 +413,7 @@ defineExpose({
 .je-password__cells.has-gutter .je-password__cell {
   background: var(--je-surface);
   border: 1px solid var(--je-border-color);
-  border-radius: var(--je-radius-sm);
+  border-radius: var(--je-control-radius-sm);
 }
 
 .je-password.is-focused .je-password__cells {
@@ -425,14 +457,14 @@ defineExpose({
 }
 
 .je-password__dot {
-  width: 7px;
-  height: 7px;
+  width: var(--je-password-dot-size, 7px);
+  height: var(--je-password-dot-size, 7px);
   background: var(--je-text);
   border-radius: 50%;
 }
 
 .je-password__char {
-  font-size: 18px;
+  font-size: var(--je-password-cell-fs, 18px);
   font-variant-numeric: tabular-nums;
   color: var(--je-text);
 }
@@ -561,9 +593,8 @@ defineExpose({
 }
 
 @media (max-width: 768px) {
-  .je-password__cell {
-    height: 50px;
-  }
+  /* 格子高度交给尺寸变量（小 42 / 默认 48 / 大 56），窄屏同样分档，
+     不再写死一个 50px 把三档拉平 */
 
   /*
    * 关闭按钮的可见图形保持小巧（否则会压住第一个格子），

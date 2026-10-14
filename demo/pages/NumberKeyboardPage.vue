@@ -82,6 +82,12 @@ const openLoadingKeyboard = () => {
       />
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-number-keyboard v-model="visible" size="large" />
+      <je-number-keyboard v-model="visible" />
+      <je-number-keyboard v-model="visible" size="small" />
+    </DemoBlock>
+
     <DemoBlock
       title="受控显示（show + blur）"
       description="show 作为可见性的唯一来源时，收起键盘靠 blur 事件（Vant 文档里的写法：@blur=&quot;showVisible = false&quot;），此时键盘不依赖 v-model 也能收起来。"

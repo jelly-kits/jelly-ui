@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, provide } from 'vue'
 import { useIsMobile } from '../../core/useMediaQuery'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 import {
   jeDescriptionsKey,
   type JeDescriptionsContext,
@@ -24,10 +25,13 @@ const props = withDefaults(
     column: 3,
     border: false,
     direction: 'horizontal',
-    size: 'default',
+    size: undefined,
     labelWidth: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
 
 const isMobile = useIsMobile()
 
@@ -40,7 +44,7 @@ provide(
     column: actualColumn.value,
     border: props.border,
     direction: props.direction,
-    size: props.size,
+    size: size.value,
     labelWidth: props.labelWidth,
   })),
 )

@@ -27,6 +27,12 @@ const beforeChange = (next: number, current: number) => {
       <p class="hint">当前数量：{{ count }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-stepper v-model="count" size="large" />
+      <je-stepper v-model="count" />
+      <je-stepper v-model="count" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="自定义步长与小数" description="step 决定每次增减的幅度，decimalLength 固定小数位数。">
       <je-stepper v-model="stepValue" :step="5" :min="0" :input-width="56" />
       <je-stepper v-model="price" :step="0.5" :min="0" :decimal-length="2" :input-width="64" />

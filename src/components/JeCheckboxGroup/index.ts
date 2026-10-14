@@ -1,2 +1,2 @@
 export { default as JeCheckboxGroup } from './JeCheckboxGroup.vue'
-export type { JeCheckboxOption } from './types'
+export type { JeCheckboxGroupSize, JeCheckboxOption } from './types'

@@ -35,6 +35,12 @@ const readResult = () => {
       <p class="hint">当前 isEmpty：{{ isEmpty }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-signature size="large" />
+      <je-signature />
+      <je-signature size="small" />
+    </DemoBlock>
+
     <DemoBlock
       title="自定义笔色与线宽"
       description="penColor / lineWidth 实时生效，重绘时按当前参数描出历史笔画。"

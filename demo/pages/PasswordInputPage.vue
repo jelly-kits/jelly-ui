@@ -57,6 +57,12 @@ const onKeypadDelete = () => {
       <p class="hint">已输入 {{ password.length }} / 6 位</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-password-input v-model="password" size="large" />
+      <je-password-input v-model="password" />
+      <je-password-input v-model="password" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="不遮挡与自定义位数" description="mask 关闭后直接显示数字，length 控制格数。">
       <je-password-input v-model="smsCode" :length="4" :mask="false" info="短信验证码 4 位" />
       <p class="hint">验证码：{{ smsCode || '（空）' }}</p>

@@ -64,6 +64,12 @@ const onChange = (values: (string | number)[]) => {
       <p class="hint">已选择：{{ area.join(' / ') || '（空）' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-picker v-model="area" :columns="areaColumns" title="选择地区" size="large" />
+      <je-picker v-model="area" :columns="areaColumns" title="选择地区" />
+      <je-picker v-model="area" :columns="areaColumns" title="选择地区" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="三列日期" description="可见行数与行高都可以调整，建议可见行数用奇数才能正好居中。">
       <je-picker
         v-model="date"

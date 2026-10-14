@@ -5,7 +5,7 @@ import type { JeIconName } from '../JeIcon/icons'
 import { nextZIndex } from '../../core/useZIndex'
 import { useClickOutside } from '../../core/useClickOutside'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeNumberKeyboard' })
 
@@ -53,6 +53,8 @@ const props = withDefaults(
     teleport?: JeTeleportTarget | false
     /** 浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退 */
     teleportTo?: JeTeleportTarget | false
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider）；只缩放数字按键的高度与字号 */
+    size?: 'small' | 'default' | 'large'
   }>(),
   {
     // 默认 undefined 而不是 false：只有这样才能区分「没传」与「传了 false」，
@@ -80,6 +82,7 @@ const props = withDefaults(
     // 省略又会因 `| false` 被 Vue 布尔转型成 false，两种都会把全局挂载点压死
     teleport: undefined,
     teleportTo: undefined,
+    size: undefined,
   },
 )
 
@@ -100,6 +103,22 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() =>
+  size.value === 'default' ? '' : `je-number-keyboard--${size.value}`,
+)
+
+/** 删除键图标随尺寸缩放 */
+const DELETE_ICON_SIZE: Record<'small' | 'default' | 'large', number> = {
+  small: 20,
+  default: 22,
+  large: 26,
+}
+const deleteIconSize = computed(() => DELETE_ICON_SIZE[size.value])
 
 const BASE_DIGITS = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
@@ -338,7 +357,7 @@ useClickOutside(panelRef, () => {
   >
     <div
       class="je-number-keyboard"
-      :class="[`je-number-keyboard--${theme}`, { 'is-open': visible }]"
+      :class="[`je-number-keyboard--${theme}`, sizeClass, { 'is-open': visible }]"
       :style="rootStyle"
     >
       <div ref="panelRef" class="je-number-keyboard__panel">
@@ -395,7 +414,7 @@ useClickOutside(panelRef, () => {
             >
               <!-- 删除键内容：可替换成任意图标或文字（Vant 同名插槽） -->
               <slot v-if="key.kind === 'delete'" name="delete">
-                <JeIcon v-if="!deleteButtonText" :name="deleteIcon" :size="22" />
+                <JeIcon v-if="!deleteButtonText" :name="deleteIcon" :size="deleteIconSize" />
                 <span v-else>{{ deleteButtonText }}</span>
               </slot>
               <!-- 左下角额外按键内容：custom 主题配两个额外键时两个键共用这段内容 -->
@@ -429,7 +448,20 @@ useClickOutside(panelRef, () => {
   /* 这两个变量正常由根节点的内联样式给出，写在这里是为了不依赖 JS 也能有合理默认 */
   --je-number-keyboard-safe-bottom: env(safe-area-inset-bottom, 0px);
   --je-number-keyboard-duration: var(--je-duration);
+  /* 按键尺寸变量：default 为基础值，修饰类只覆盖这两个变量 */
+  --je-number-keyboard-key-h: 48px;
+  --je-number-keyboard-key-fs: 22px;
   transition: visibility var(--je-number-keyboard-duration) ease;
+}
+
+.je-number-keyboard--small {
+  --je-number-keyboard-key-h: 44px;
+  --je-number-keyboard-key-fs: 20px;
+}
+
+.je-number-keyboard--large {
+  --je-number-keyboard-key-h: 54px;
+  --je-number-keyboard-key-fs: 25px;
 }
 
 .je-number-keyboard.is-open {
@@ -509,14 +541,14 @@ useClickOutside(panelRef, () => {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  height: 48px;
+  height: var(--je-number-keyboard-key-h, 48px);
   font-family: inherit;
-  font-size: 22px;
+  font-size: var(--je-number-keyboard-key-fs, 22px);
   color: var(--je-text);
   cursor: pointer;
   background: var(--je-surface);
   border: none;
-  border-radius: var(--je-radius-sm);
+  border-radius: var(--je-control-radius);
   outline: none;
   touch-action: manipulation;
   /* 长按按键时不要选中小方块里的数字、也不要弹系统菜单：连击和长按都应该是纯粹的按键手势 */
@@ -570,9 +602,8 @@ useClickOutside(panelRef, () => {
 }
 
 @media (max-width: 768px) {
-  .je-number-keyboard__key {
-    height: 50px;
-  }
+  /* 按键高度交给尺寸变量（小 44 / 默认 48 / 大 54），窄屏同样分档，
+     不再写死一个 50px 把三档拉平 */
 
   /* 触控热区 ≥44px：标题栏的文字关闭键在移动端要撑够 */
   .je-number-keyboard__close {

@@ -16,10 +16,15 @@ import {
   startOfDay,
   startOfMonth,
   type JeDatePickerModelValue,
+  type JeDatePickerSize,
   type JeDatePickerType,
 } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import {
+  useJeConfigSize,
+  useTeleportTarget,
+  type JeConfigSize,
+} from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeDatePicker' })
 
@@ -43,6 +48,8 @@ const props = withDefaults(
     format?: string
     disabled?: boolean
     clearable?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JeDatePickerSize
     disabledDate?: (date: Date) => boolean
     /** 一周起始日，0 = 周日，1 = 周一 */
     weekStart?: number
@@ -55,10 +62,21 @@ const props = withDefaults(
     placeholder: '请选择日期',
     disabled: false,
     clearable: true,
+    size: undefined,
     weekStart: 1,
     teleportTo: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() =>
+  size.value === 'default' ? '' : `je-date-picker--${size.value}`,
+)
+
+/** 图标随尺寸档位缩放：清空按钮 */
+const CONTROL_ICON: Record<JeConfigSize, number> = { small: 12, default: 14, large: 16 }
+const iconSize = computed(() => CONTROL_ICON[size.value])
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
@@ -475,7 +493,7 @@ const panelStyle = computed(() => {
   <div
     ref="rootRef"
     class="je-date-picker"
-    :class="{ 'is-open': isOpen, 'is-disabled': disabled }"
+    :class="[sizeClass, { 'is-open': isOpen, 'is-disabled': disabled }]"
   >
     <div
       ref="triggerRef"
@@ -497,9 +515,9 @@ const panelStyle = computed(() => {
         aria-label="清除"
         @click.stop="clear"
       >
-        <JeIcon name="close" :size="14" />
+        <JeIcon name="close" :size="iconSize" />
       </button>
-      <span class="je-date-picker__arrow" aria-hidden="true" />
+      <JeIcon class="je-date-picker__arrow" name="chevron-down" :size="iconSize" />
     </div>
 
     <Teleport
@@ -692,27 +710,54 @@ const panelStyle = computed(() => {
 
 <style scoped>
 .je-date-picker {
+  /* 日历格子边长；default 档直接引用全局控件 token，small / large 只覆盖这一档 */
+  --je-date-picker-day: var(--je-control-h);
   position: relative;
   font-family: inherit;
   user-select: none;
 }
 
+.je-date-picker--small {
+  --je-date-picker-day: 28px;
+}
+
+.je-date-picker--large {
+  --je-date-picker-day: 36px;
+}
+
 .je-date-picker__trigger {
+  /* 尺寸只改这三个变量，default 不产生类名（基础值即 default） */
+  --jd-h: var(--je-control-h);
+  --jd-px: var(--je-control-px);
+  --jd-fs: var(--je-control-fs);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   box-sizing: border-box;
-  padding: 14px 16px;
-  font-size: 15px;
+  height: var(--jd-h);
+  padding: 0 var(--jd-px);
+  font-size: var(--jd-fs);
   color: var(--je-text-faint);
   background: var(--je-surface);
-  border: var(--je-border);
-  border-radius: var(--je-radius);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius);
   cursor: pointer;
   outline: none;
   transition: border-color var(--je-duration) ease, background var(--je-duration) ease,
     box-shadow var(--je-duration) ease;
+}
+
+.je-date-picker--large .je-date-picker__trigger {
+  --jd-h: var(--je-control-h-lg);
+  --jd-px: var(--je-control-px-lg);
+  --jd-fs: var(--je-control-fs-lg);
+}
+
+.je-date-picker--small .je-date-picker__trigger {
+  --jd-h: var(--je-control-h-sm);
+  --jd-px: var(--je-control-px-sm);
+  --jd-fs: var(--je-control-fs-sm);
 }
 
 .je-date-picker__trigger.has-value {
@@ -757,20 +802,11 @@ const panelStyle = computed(() => {
 
 .je-date-picker__arrow {
   flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  margin-top: -4px;
-  border-right: 2px solid var(--je-text-faint);
-  border-bottom: 2px solid var(--je-text-faint);
-  transform: rotate(45deg);
-  transition: transform 0.4s var(--je-ease-overshoot), margin-top 0.4s var(--je-ease-overshoot),
-    border-color var(--je-duration) ease;
+  transition: transform var(--je-duration) ease;
 }
 
 .je-date-picker.is-open .je-date-picker__arrow {
-  margin-top: 4px;
-  border-color: var(--je-text);
-  transform: rotate(-135deg);
+  transform: rotate(180deg);
 }
 
 .je-date-picker.is-disabled .je-date-picker__trigger {
@@ -782,8 +818,7 @@ const panelStyle = computed(() => {
   position: fixed;
   z-index: 50;
   box-sizing: border-box;
-  /* 日历里一天的格子尺寸；第二步只有时间，靠它撑住面板宽度 */
-  --je-date-picker-day: 34px;
+  /* 面板内日历格子边长由根节点的 --je-date-picker-day 提供（随尺寸档位变化） */
   padding: 14px;
   font-family: inherit;
   color: var(--je-text);
@@ -885,8 +920,8 @@ const panelStyle = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--je-date-picker-day);
-  height: 34px;
+  width: var(--je-date-picker-day, 32px);
+  height: var(--je-date-picker-day, 32px);
   margin: 1px auto;
   padding: 0;
   font-family: inherit;
@@ -1177,6 +1212,25 @@ const panelStyle = computed(() => {
     width: 100%;
     min-height: 44px;
     font-size: 16px;
+  }
+
+  /* 触屏档：与 input / select / button 同一套三档，输入框高度与 select 对齐 */
+  .je-date-picker__trigger {
+    --jd-h: var(--je-touch-h);
+    --jd-px: var(--je-touch-px);
+    --jd-fs: var(--je-touch-fs);
+  }
+
+  .je-date-picker--small .je-date-picker__trigger {
+    --jd-h: var(--je-touch-h-sm);
+    --jd-px: var(--je-touch-px-sm);
+    --jd-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-date-picker--large .je-date-picker__trigger {
+    --jd-h: var(--je-touch-h-lg);
+    --jd-px: var(--je-touch-px-lg);
+    --jd-fs: var(--je-touch-fs-lg);
   }
 }
 

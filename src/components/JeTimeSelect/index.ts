@@ -1,2 +1,2 @@
 export { default as JeTimeSelect } from './JeTimeSelect.vue'
-export type { JeTimeSelectValue } from './types'
+export type { JeTimeSelectSize, JeTimeSelectValue } from './types'

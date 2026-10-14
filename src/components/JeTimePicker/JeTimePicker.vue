@@ -4,7 +4,7 @@ import { useIsMobile } from '../../core/useMediaQuery'
 import { useScrollLock } from '../../core/useScrollLock'
 import { useSheetDrag } from '../../core/useSheetDrag'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeTimePicker' })
 
@@ -18,6 +18,8 @@ const props = withDefaults(
     minuteStep?: number
     placeholder?: string
     disabled?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: 'small' | 'default' | 'large'
     /** 浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退 */
     teleportTo?: JeTeleportTarget | false
   }>(),
@@ -27,9 +29,14 @@ const props = withDefaults(
     minuteStep: 5,
     placeholder: '请选择时间',
     disabled: false,
+    size: undefined,
     teleportTo: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-time--${size.value}`))
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
@@ -166,7 +173,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
 </script>
 
 <template>
-  <div ref="rootRef" class="je-time" :class="{ 'is-open': isOpen, 'is-disabled': disabled }">
+  <div ref="rootRef" class="je-time" :class="[sizeClass, { 'is-open': isOpen, 'is-disabled': disabled }]">
     <button
       type="button"
       class="je-time__trigger"
@@ -252,8 +259,33 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
 
 <style scoped>
 .je-time {
+  /* default 档直接引用全局控件 token，small / large 只覆盖这几个变量 */
+  --jt-h: var(--je-control-h);
+  --jt-px: var(--je-control-px);
+  --jt-fs: var(--je-control-fs);
+  --jt-item-h: var(--je-control-h);
+  --jt-item-px: var(--je-control-px);
+  --jt-item-fs: var(--je-control-fs);
   position: relative;
   font-family: inherit;
+}
+
+.je-time--small {
+  --jt-h: var(--je-control-h-sm);
+  --jt-px: var(--je-control-px-sm);
+  --jt-fs: var(--je-control-fs-sm);
+  --jt-item-h: var(--je-control-h-sm);
+  --jt-item-px: var(--je-control-px-sm);
+  --jt-item-fs: var(--je-control-fs-sm);
+}
+
+.je-time--large {
+  --jt-h: var(--je-control-h-lg);
+  --jt-px: var(--je-control-px-lg);
+  --jt-fs: var(--je-control-fs-lg);
+  --jt-item-h: var(--je-control-h-lg);
+  --jt-item-px: var(--je-control-px-lg);
+  --jt-item-fs: var(--je-control-fs-lg);
 }
 
 .je-time__trigger {
@@ -263,13 +295,14 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
   gap: 12px;
   box-sizing: border-box;
   width: 100%;
-  padding: 14px 16px;
+  height: var(--jt-h);
+  padding: 0 var(--jt-px);
   font-family: inherit;
-  font-size: 15px;
+  font-size: var(--jt-fs);
   color: var(--je-text-faint);
   background: var(--je-surface);
-  border: var(--je-border);
-  border-radius: var(--je-radius);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius);
   cursor: pointer;
   outline: none;
   transition: border-color var(--je-duration) ease, background var(--je-duration) ease,
@@ -429,14 +462,18 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
 }
 
 .je-time__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 48px;
-  padding: 8px 12px;
+  min-height: var(--jt-item-h, 32px);
+  padding: 0 var(--jt-item-px, 12px);
   font-family: inherit;
-  font-size: 15px;
+  font-size: var(--jt-item-fs, 14px);
   color: var(--je-text-faint);
   background: none;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--je-control-radius-sm);
   cursor: pointer;
   will-change: transform;
   transition: background 0.2s ease, color 0.2s ease;
@@ -526,6 +563,25 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onDocumentPoin
   .je-time__column {
     flex: 1 1 0;
     max-height: 42vh;
+  }
+
+  /* 触发框接触屏 token，三档在窄屏同样生效；滚轮单元格保持固定的触摸高度 */
+  .je-time {
+    --jt-h: var(--je-touch-h);
+    --jt-px: var(--je-touch-px);
+    --jt-fs: var(--je-touch-fs);
+  }
+
+  .je-time--small {
+    --jt-h: var(--je-touch-h-sm);
+    --jt-px: var(--je-touch-px-sm);
+    --jt-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-time--large {
+    --jt-h: var(--je-touch-h-lg);
+    --jt-px: var(--je-touch-px-lg);
+    --jt-fs: var(--je-touch-fs-lg);
   }
 
   /* 触屏热区不小于 44px */

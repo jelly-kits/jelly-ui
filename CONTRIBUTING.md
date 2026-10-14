@@ -95,7 +95,7 @@
 5. **新建 `demo/pages/XxxPage.vue`** — 并在页面 `<script setup>` 里**显式 import 用到的组件**，否则「展开代码」面板里生成的示例代码会缺 import。
 6. **`demo/i18n/en-US.ts` 补标题与说明的英文 key** — 口径是「中文原文即 key」，页面里直接写中文即可。
 7. **给 props / slots / emits 写 JSDoc** — `scripts/gen-api.mjs` 靠它生成 API 表。要点：props 说明写在 `types.ts` interface 成员**自己那一行**的 JSDoc（写在类型别名上取不到）；events 必须写内联字面量 `defineEmits<{ /** 说明 */ confirm: [] }>()`；`defineExpose` 不能写简写属性；插槽说明写在 `<slot>` 正上方的一行 HTML 注释里；面向 API 表的说明是纯文本插值，不要用 `**加粗**` / 反引号等 markdown 标记。
-8. **重跑 `npm run gen:api`** — 它重写 `demo/api-data.ts`（**提交物**），所以改完组件必须跑。
+8. **重跑 `npm run gen:api`** — 它重写 `demo/api-data.ts`（**提交物**），所以改完组件必须跑。新增的选项如果只从某个版本起才有，顺手在它自己的 JSDoc / 注释里写一句 `@since x.y.z`：`scripts/api-extract.mjs` 会把它从说明正文里摘出来单独存进 `since` 字段（目前只留存、不在文档站渲染），将来要加版本徽章时直接读这个字段即可。
 9. **浮层类组件记得接 Teleport 目标** — 用 `src/components/JeConfigProvider/types.ts` 的 `useTeleportTarget(() => props.teleportTo)`，并在 `withDefaults` 里**显式写 `teleportTo: undefined`**（见硬性约定 7）；否则回退链失效、浮层永远就地渲染。
 
 ## 8. 验证方式

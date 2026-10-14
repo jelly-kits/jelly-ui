@@ -21,6 +21,18 @@ const limited = ref<number | null>(5)
       <p class="state">当前值：{{ quantity ?? 'null' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-field label="数量">
+        <je-input-number v-model="quantity" :min="0" :max="99" size="large" />
+      </je-field>
+      <je-field label="数量">
+        <je-input-number v-model="quantity" :min="0" :max="99" />
+      </je-field>
+      <je-field label="数量">
+        <je-input-number v-model="quantity" :min="0" :max="99" size="small" />
+      </je-field>
+    </DemoBlock>
+
     <DemoBlock title="步长与精度">
       <je-field label="单价（步长 0.5，两位小数）">
         <je-input-number v-model="price" :step="0.5" :precision="2" :min="0" />

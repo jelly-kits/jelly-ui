@@ -32,6 +32,12 @@ const onLog = (value: (string | number)[], direction: string, keys: (string | nu
       <p class="state">{{ log }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-transfer v-model="picked" :data="data" size="large" />
+      <je-transfer v-model="picked" :data="data" />
+      <je-transfer v-model="picked" :data="data" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="带搜索与自定义标题" description="filterable 打开后每栏顶部出现搜索框，搜索只影响当前显示与全选范围。">
       <je-transfer
         v-model="withFilter"

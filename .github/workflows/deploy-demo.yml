@@ -9,6 +9,13 @@ name: Deploy demo
 on:
   push:
     branches: [main]
+    # 只改文档（README / LICENSE 等）时不重建：改说明文字没必要重发一次 Pages。
+    # 判定口径是「本次 push 涉及的文件全部命中忽略规则」才跳过 ——
+    # 只要夹带一个 demo/ 或 src/ 下的文件，文档站照常重建。
+    # 需要强制部署时走 Actions 页的 “Run workflow”：workflow_dispatch 不受 paths 过滤影响。
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
   workflow_dispatch:
 
 # Pages 部署必需：id-token 给 deploy-pages 做 OIDC 校验

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { JeIcon } from '../JeIcon'
+import { useJeConfigSize, type JeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeRate' })
 
@@ -13,10 +14,20 @@ const props = withDefaults(
     /** 再次点击当前分值可清零 */
     clearable?: boolean
     disabled?: boolean
-    /** 星星尺寸，不传则用主题默认值（窄屏会自动放大） */
-    size?: number
+    /** 星星尺寸：number 直接按 px（优先级最高）；small / default / large 走档位映射；不传时取全局配置（窄屏会自动放大） */
+    size?: number | JeConfigSize
+    /** 填充星星的颜色，传任意 CSS 颜色；不传时用主题的 warning 色 */
+    color?: string
   }>(),
-  { modelValue: 0, max: 5, allowHalf: false, clearable: false, disabled: false },
+  {
+    modelValue: 0,
+    max: 5,
+    allowHalf: false,
+    clearable: false,
+    disabled: false,
+    size: undefined,
+    color: undefined,
+  },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: number] }>()
@@ -29,9 +40,23 @@ const stepSize = computed(() => (props.allowHalf ? 0.5 : 1))
 const displayValue = computed(() => hoverValue.value ?? props.modelValue)
 const fillWidth = computed(() => `${(displayValue.value / props.max) * 100}%`)
 
-const sizeStyle = computed(() =>
-  props.size == null ? undefined : { '--je-rate-size': `${props.size}px` },
-)
+/** 档位到星星 px 的映射：small 18 / default 22 / large 26 */
+const RATE_SIZE_MAP: Record<JeConfigSize, number> = { small: 18, default: 22, large: 26 }
+
+/** 全局尺寸档位，回退链末端（configureJelly / JeConfigProvider）；number 与档位分开判断，全局只会是档位 */
+const configSize = useJeConfigSize(() => undefined)
+
+const sizeStyle = computed(() => {
+  // number 优先级最高，直接按 px 使用
+  if (typeof props.size === 'number') return { '--je-rate-size': `${props.size}px` }
+  const level: JeConfigSize = props.size ?? configSize.value
+  const px = RATE_SIZE_MAP[level]
+  // default（22px）不写内联变量，留给基础样式与窄屏 28px 放大（内联样式会盖掉媒体查询）
+  return px === RATE_SIZE_MAP.default ? undefined : { '--je-rate-size': `${px}px` }
+})
+
+/** 自定义填充色：只在内联写变量，不传时由基础样式回退到主题 warning 色 */
+const colorStyle = computed(() => (props.color ? { '--je-rate-color': props.color } : undefined))
 
 const valueFromEvent = (event: PointerEvent) => {
   const el = rootRef.value
@@ -93,7 +118,7 @@ const onKeydown = (event: KeyboardEvent) => {
     ref="rootRef"
     class="je-rate"
     :class="{ 'is-disabled': disabled }"
-    :style="sizeStyle"
+    :style="[sizeStyle, colorStyle]"
     role="slider"
     :tabindex="disabled ? -1 : 0"
     aria-label="评分"
@@ -121,7 +146,9 @@ const onKeydown = (event: KeyboardEvent) => {
 
 <style scoped>
 .je-rate {
-  --je-rate-size: 28px;
+  --je-rate-size: 22px;
+  /* 填充色：默认主题 warning，可由 color 属性内联覆盖 */
+  --je-rate-color: var(--je-warning);
 
   position: relative;
   display: inline-flex;
@@ -141,7 +168,7 @@ const onKeydown = (event: KeyboardEvent) => {
   top: 8px;
   left: 0;
   overflow: hidden;
-  color: var(--je-warning);
+  color: var(--je-rate-color);
 }
 
 .je-rate__layer--void {
@@ -177,7 +204,7 @@ const onKeydown = (event: KeyboardEvent) => {
 /* 窄屏放大星星，保证触控热区 */
 @media (max-width: 768px) {
   .je-rate {
-    --je-rate-size: 34px;
+    --je-rate-size: 28px;
   }
 }
 </style>

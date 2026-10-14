@@ -9,5 +9,6 @@ export type {
   JeUploadProgressEvent,
   JeUploadRequestHandler,
   JeUploadRequestOptions,
+  JeUploadSize,
   JeUploadStatus,
 } from './types'

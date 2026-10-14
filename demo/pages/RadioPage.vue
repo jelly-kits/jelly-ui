@@ -25,6 +25,21 @@ const mode = ref<string | number | null>('online')
       <p class="state">当前值：{{ mode ?? 'null' }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-radio-group v-model="mode" :options="modes" size="large" />
+      <je-radio-group v-model="mode" :options="modes" />
+      <je-radio-group v-model="mode" :options="modes" size="small" />
+    </DemoBlock>
+
+    <DemoBlock
+      title="无底色无边框"
+      description="background / border 置为 false，选项退成圆圈加文字，适合铺在已有底色的页面上。"
+    >
+      <je-field label="参与方式">
+        <je-radio-group v-model="mode" :options="modes" :background="false" :border="false" />
+      </je-field>
+    </DemoBlock>
+
     <DemoBlock title="禁用">
       <je-field label="不可选择">
         <je-radio-group :options="modes" disabled />

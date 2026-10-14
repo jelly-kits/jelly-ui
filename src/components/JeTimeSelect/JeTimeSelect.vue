@@ -7,9 +7,9 @@ import { useScrollLock } from '../../core/useScrollLock'
 import { useSheetDrag } from '../../core/useSheetDrag'
 import { nextZIndex } from '../../core/useZIndex'
 import { JeIcon } from '../JeIcon'
-import type { JeTimeSelectValue } from './types'
+import type { JeTimeSelectSize, JeTimeSelectValue } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget, type JeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeTimeSelect' })
 
@@ -29,6 +29,8 @@ const props = withDefaults(
     minTime?: string
     /** 可选上限（含） */
     maxTime?: string
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JeTimeSelectSize
     /** 浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退 */
     teleportTo?: JeTeleportTarget | false
   }>(),
@@ -40,9 +42,20 @@ const props = withDefaults(
     placeholder: '请选择时间',
     disabled: false,
     clearable: true,
+    size: undefined,
     teleportTo: undefined,
   },
 )
+
+/** 尺寸：组件自身优先，再退回全局配置；default 不产生类名（基础样式即 default） */
+const size = useJeConfigSize(() => props.size)
+const sizeClass = computed(() =>
+  size.value === 'default' ? '' : `je-time-select--${size.value}`,
+)
+
+/** 图标尺寸随档位缩放 */
+const CONTROL_ICON: Record<JeConfigSize, number> = { small: 12, default: 14, large: 16 }
+const iconSize = computed(() => CONTROL_ICON[size.value])
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
@@ -214,7 +227,7 @@ const panelStyle = computed(() => {
   <div
     ref="rootRef"
     class="je-time-select"
-    :class="{ 'is-open': isOpen, 'is-disabled': disabled }"
+    :class="[sizeClass, { 'is-open': isOpen, 'is-disabled': disabled }]"
   >
     <div
       ref="triggerRef"
@@ -237,9 +250,9 @@ const panelStyle = computed(() => {
         aria-label="清除"
         @click.stop="clear"
       >
-        <JeIcon name="close" :size="14" />
+        <JeIcon name="close" :size="iconSize" />
       </button>
-      <span class="je-time-select__arrow" aria-hidden="true" />
+      <JeIcon class="je-time-select__arrow" name="chevron-down" :size="iconSize" />
     </div>
 
     <Teleport
@@ -293,9 +306,34 @@ const panelStyle = computed(() => {
 
 <style scoped>
 .je-time-select {
+  /* default 档直接引用全局控件 token，small / large 只覆盖这几个变量 */
+  --jts-h: var(--je-control-h);
+  --jts-px: var(--je-control-px);
+  --jts-fs: var(--je-control-fs);
+  --jts-item-h: var(--je-control-h);
+  --jts-item-px: var(--je-control-px);
+  --jts-item-fs: var(--je-control-fs);
   position: relative;
   font-family: inherit;
   user-select: none;
+}
+
+.je-time-select--small {
+  --jts-h: var(--je-control-h-sm);
+  --jts-px: var(--je-control-px-sm);
+  --jts-fs: var(--je-control-fs-sm);
+  --jts-item-h: var(--je-control-h-sm);
+  --jts-item-px: var(--je-control-px-sm);
+  --jts-item-fs: var(--je-control-fs-sm);
+}
+
+.je-time-select--large {
+  --jts-h: var(--je-control-h-lg);
+  --jts-px: var(--je-control-px-lg);
+  --jts-fs: var(--je-control-fs-lg);
+  --jts-item-h: var(--je-control-h-lg);
+  --jts-item-px: var(--je-control-px-lg);
+  --jts-item-fs: var(--je-control-fs-lg);
 }
 
 .je-time-select__trigger {
@@ -304,12 +342,13 @@ const panelStyle = computed(() => {
   justify-content: space-between;
   gap: 10px;
   box-sizing: border-box;
-  padding: 14px 16px;
-  font-size: 15px;
+  height: var(--jts-h);
+  padding: 0 var(--jts-px);
+  font-size: var(--jts-fs);
   color: var(--je-text-faint);
   background: var(--je-surface);
-  border: var(--je-border);
-  border-radius: var(--je-radius);
+  border: 1px solid var(--je-border-color);
+  border-radius: var(--je-control-radius);
   cursor: pointer;
   outline: none;
   transition: border-color var(--je-duration) ease, background var(--je-duration) ease,
@@ -358,20 +397,11 @@ const panelStyle = computed(() => {
 
 .je-time-select__arrow {
   flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  margin-top: -4px;
-  border-right: 2px solid var(--je-text-faint);
-  border-bottom: 2px solid var(--je-text-faint);
-  transform: rotate(45deg);
-  transition: transform 0.4s var(--je-ease-overshoot), margin-top 0.4s var(--je-ease-overshoot),
-    border-color var(--je-duration) ease;
+  transition: transform var(--je-duration) ease;
 }
 
 .je-time-select.is-open .je-time-select__arrow {
-  margin-top: 4px;
-  border-color: var(--je-text);
-  transform: rotate(-135deg);
+  transform: rotate(180deg);
 }
 
 .je-time-select.is-disabled .je-time-select__trigger {
@@ -412,10 +442,11 @@ const panelStyle = computed(() => {
 }
 
 .je-time-select__item {
-  padding: 11px 14px;
-  font-size: 14px;
+  min-height: var(--jts-item-h, 32px);
+  padding: 0 var(--jts-item-px, 12px);
+  font-size: var(--jts-item-fs, 14px);
   color: var(--je-text-muted);
-  border-radius: var(--je-radius-sm);
+  border-radius: var(--je-control-radius-sm);
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease,
     transform var(--je-duration) var(--je-ease-overshoot);
@@ -508,6 +539,25 @@ const panelStyle = computed(() => {
   .je-time-select__clear {
     width: 32px;
     height: 32px;
+  }
+
+  /* 触屏档：与 input / select / button 同一套三档，输入框高度与 select 对齐 */
+  .je-time-select {
+    --jts-h: var(--je-touch-h);
+    --jts-px: var(--je-touch-px);
+    --jts-fs: var(--je-touch-fs);
+  }
+
+  .je-time-select--small {
+    --jts-h: var(--je-touch-h-sm);
+    --jts-px: var(--je-touch-px-sm);
+    --jts-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-time-select--large {
+    --jts-h: var(--je-touch-h-lg);
+    --jts-px: var(--je-touch-px-lg);
+    --jts-fs: var(--je-touch-fs-lg);
   }
 }
 

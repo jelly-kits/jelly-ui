@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeSearch' })
 
@@ -23,6 +24,8 @@ const props = withDefaults(
     cancelText?: string
     /** 有内容时显示清除按钮 */
     clearable?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: 'small' | 'default' | 'large'
   }>(),
   {
     modelValue: '',
@@ -35,6 +38,7 @@ const props = withDefaults(
     showCancel: false,
     cancelText: '取消',
     clearable: true,
+    size: undefined,
   },
 )
 
@@ -52,6 +56,21 @@ const emit = defineEmits<{
 
 const focused = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-search--${size.value}`))
+
+/** 放大镜与清除图标随尺寸缩放（对齐控件图标档位） */
+const ICON_SIZE: Record<'small' | 'default' | 'large', { search: number; close: number }> = {
+  small: { search: 12, close: 10 },
+  default: { search: 14, close: 11 },
+  large: { search: 16, close: 12 },
+}
+const searchIconSize = computed(() => ICON_SIZE[size.value].search)
+const closeIconSize = computed(() => ICON_SIZE[size.value].close)
 
 const showClear = computed(
   () => props.clearable && !props.disabled && !props.readonly && props.modelValue.length > 0,
@@ -95,11 +114,11 @@ const onBlur = (event: FocusEvent) => {
 <template>
   <div
     class="je-search"
-    :class="[`je-search--${shape}`, { 'is-focused': focused, 'is-disabled': disabled }]"
+    :class="[`je-search--${shape}`, sizeClass, { 'is-focused': focused, 'is-disabled': disabled }]"
     :style="rootStyle"
   >
     <div class="je-search__field">
-      <JeIcon class="je-search__icon" name="search" :size="16" />
+      <JeIcon class="je-search__icon" name="search" :size="searchIconSize" />
 
       <input
         ref="inputRef"
@@ -124,7 +143,7 @@ const onBlur = (event: FocusEvent) => {
         aria-label="清除"
         @click="onClear"
       >
-        <JeIcon name="close" :size="12" />
+        <JeIcon name="close" :size="closeIconSize" />
       </button>
     </div>
 
@@ -148,6 +167,25 @@ const onBlur = (event: FocusEvent) => {
   font-family: inherit;
   /* 输入框底色，可被 background 属性覆盖 */
   --je-search-bg: var(--je-surface);
+  /* 尺寸变量：default 为基础值，修饰类只覆盖这几个变量 */
+  --je-search-field-h: 36px;
+  --je-search-field-px: var(--je-control-px);
+  --je-search-fs: var(--je-control-fs);
+  --je-search-radius: var(--je-control-radius);
+}
+
+.je-search--small {
+  --je-search-field-h: 30px;
+  --je-search-field-px: var(--je-control-px-sm);
+  --je-search-fs: var(--je-control-fs-sm);
+  --je-search-radius: var(--je-control-radius-sm);
+}
+
+.je-search--large {
+  --je-search-field-h: 44px;
+  --je-search-field-px: var(--je-control-px-lg);
+  --je-search-fs: var(--je-control-fs-lg);
+  --je-search-radius: var(--je-control-radius-lg);
 }
 
 .je-search__field {
@@ -157,8 +195,8 @@ const onBlur = (event: FocusEvent) => {
   gap: 8px;
   box-sizing: border-box;
   min-width: 0;
-  height: 42px;
-  padding: 0 14px;
+  height: var(--je-search-field-h, 36px);
+  padding: 0 var(--je-search-field-px, 12px);
   color: var(--je-text-faint);
   background: var(--je-search-bg);
   border: 1.5px solid transparent;
@@ -170,7 +208,7 @@ const onBlur = (event: FocusEvent) => {
 }
 
 .je-search--square .je-search__field {
-  border-radius: var(--je-radius);
+  border-radius: var(--je-search-radius);
 }
 
 /* 聚焦态只提亮描边与光晕，保留 background 属性给的底色 */
@@ -184,7 +222,7 @@ const onBlur = (event: FocusEvent) => {
   min-width: 0;
   padding: 0;
   font-family: inherit;
-  font-size: 15px;
+  font-size: var(--je-search-fs, 14px);
   color: var(--je-text);
   background: none;
   border: none;
@@ -222,10 +260,10 @@ const onBlur = (event: FocusEvent) => {
 
 .je-search__cancel {
   flex-shrink: 0;
-  height: 42px;
+  height: var(--je-search-field-h, 36px);
   padding: 0 2px;
   font-family: inherit;
-  font-size: 15px;
+  font-size: var(--je-search-fs, 14px);
   color: var(--je-primary);
   cursor: pointer;
   background: none;
@@ -247,10 +285,22 @@ const onBlur = (event: FocusEvent) => {
 }
 
 @media (max-width: 768px) {
-  /* 触屏上把输入框与取消按钮热区兜到 44px 以上 */
+  /* 触屏档：输入框与取消按钮同一条三档（32 / 44 / 50），不再被 44px 热区抬平 */
+  .je-search {
+    --je-search-field-h: var(--je-touch-h);
+  }
+
+  .je-search--small {
+    --je-search-field-h: var(--je-touch-h-sm);
+  }
+
+  .je-search--large {
+    --je-search-field-h: var(--je-touch-h-lg);
+  }
+
   .je-search__field,
   .je-search__cancel {
-    height: 44px;
+    height: var(--je-search-field-h, 36px);
   }
 }
 </style>

@@ -19,6 +19,12 @@ const busy = ref<JeSwitchValue>(true)
       <p class="state">当前状态：{{ enabled }}</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-switch v-model="enabled" size="large" />
+      <je-switch v-model="enabled" />
+      <je-switch v-model="enabled" size="small" />
+    </DemoBlock>
+
     <DemoBlock title="自定义取值">
       <je-switch v-model="value" active-value="on" inactive-value="off" />
       <p class="state">当前值：{{ value }}</p>

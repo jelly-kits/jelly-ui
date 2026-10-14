@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useAttrs } from 'vue'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import { useJeConfig } from '../JeConfigProvider/types'
 import type { JeIconName } from '../JeIcon/icons'
 
 defineOptions({ name: 'JeCell' })
@@ -34,7 +35,7 @@ const props = withDefaults(
     isLink: false,
     required: false,
     center: false,
-    size: 'default',
+    size: undefined,
     border: true,
   },
 )
@@ -43,6 +44,14 @@ const emit = defineEmits<{
   /** 点击整行；键盘回车 / 空格也会触发 */
   click: [event: MouseEvent | KeyboardEvent]
 }>()
+
+const config = useJeConfig()
+
+/**
+ * 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider）。
+ * JeCell 只有 default / large 两档，全局配 small 时按 default 处理。
+ */
+const size = computed(() => ((props.size ?? config.size.value) === 'large' ? 'large' : 'default'))
 
 /** 显式挂 click 监听也算可点，好让键盘用户能聚焦并按回车 */
 const attrs = useAttrs()

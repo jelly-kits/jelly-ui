@@ -30,6 +30,27 @@ const picked = ref<(string | number)[]>(['design'])
       <p class="state">当前值：[{{ picked.join(', ') }}]</p>
     </DemoBlock>
 
+    <DemoBlock title="尺寸" description="large / default / small 三档，不传时取全局配置。">
+      <je-field label="感兴趣的主题">
+        <je-checkbox-group v-model="picked" :options="topics" size="large" />
+      </je-field>
+      <je-field label="感兴趣的主题">
+        <je-checkbox-group v-model="picked" :options="topics" />
+      </je-field>
+      <je-field label="感兴趣的主题">
+        <je-checkbox-group v-model="picked" :options="topics" size="small" />
+      </je-field>
+    </DemoBlock>
+
+    <DemoBlock
+      title="无底色无边框"
+      description="background / border 置为 false，选项退成勾选框加文字，适合铺在已有底色的页面上。"
+    >
+      <je-field label="感兴趣的主题">
+        <je-checkbox-group v-model="picked" :options="topics" :background="false" :border="false" />
+      </je-field>
+    </DemoBlock>
+
     <DemoBlock title="禁用">
       <je-field label="不可选择">
         <je-checkbox-group :options="topics" disabled />

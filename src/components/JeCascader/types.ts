@@ -7,3 +7,6 @@ export interface JeCascaderOption {
 
 /** 级联选择的绑定值：从根到叶子的 value 路径 */
 export type JeCascaderValue = (string | number)[]
+
+/** 触发器尺寸 */
+export type JeCascaderSize = 'small' | 'default' | 'large'

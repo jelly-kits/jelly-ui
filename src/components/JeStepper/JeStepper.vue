@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount, ref, watch } from 'vue'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeStepper' })
 
@@ -30,6 +31,8 @@ const props = withDefaults(
      * 支持异步，便于先弹确认框再决定是否改动。
      */
     beforeChange?: (next: number, current: number) => boolean | Promise<boolean>
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: 'small' | 'default' | 'large'
   }>(),
   {
     modelValue: 1,
@@ -43,6 +46,7 @@ const props = withDefaults(
     inputWidth: 48,
     buttonSize: 32,
     beforeChange: undefined,
+    size: undefined,
   },
 )
 
@@ -85,11 +89,38 @@ watch(displayValue, (value) => {
   inputValue.value = value
 }, { immediate: true })
 
-const rootStyle = computed(() => ({
-  '--je-stepper-btn': `${props.buttonSize}px`,
-  '--je-stepper-input-w':
-    typeof props.inputWidth === 'number' ? `${props.inputWidth}px` : props.inputWidth,
-}))
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-stepper--${size.value}`))
+
+/** 加减按钮图标随尺寸缩放（default 14 为原值） */
+const ICON_SIZE: Record<'small' | 'default' | 'large', number> = { small: 12, default: 14, large: 16 }
+const iconSize = computed(() => ICON_SIZE[size.value])
+
+/*
+ * inputWidth / buttonSize 只在调用方显式传了的时候才写内联变量：
+ * 内联样式的优先级高于 CSS 类，若无条件写入就会把 size 档位的类覆盖掉，
+ * 导致这两个尺寸永远钉死在默认值上（兼容 input-width 这类 kebab-case 写法）。
+ */
+const instance = getCurrentInstance()
+const isProvided = (name: string) => {
+  const raw = instance?.vnode.props
+  if (!raw) return false
+  const kebab = name.replace(/[A-Z]/g, (char) => `-${char.toLowerCase()}`)
+  return name in raw || kebab in raw
+}
+
+const rootStyle = computed(() => {
+  const style: Record<string, string> = {}
+  if (isProvided('buttonSize')) style['--je-stepper-btn'] = `${props.buttonSize}px`
+  if (isProvided('inputWidth')) {
+    style['--je-stepper-input-w'] =
+      typeof props.inputWidth === 'number' ? `${props.inputWidth}px` : props.inputWidth
+  }
+  return style
+})
 
 /** 还原输入框显示（拦截 / 无效输入时用） */
 const restore = () => {
@@ -186,7 +217,7 @@ onBeforeUnmount(stopRepeat)
 <template>
   <div
     class="je-stepper"
-    :class="{ 'is-disabled': disabled }"
+    :class="[sizeClass, { 'is-disabled': disabled }]"
     :style="rootStyle"
   >
     <button
@@ -200,7 +231,7 @@ onBeforeUnmount(stopRepeat)
       @pointercancel="stopRepeat"
       @contextmenu.prevent
     >
-      <JeIcon name="minus" :size="14" />
+      <JeIcon name="minus" :size="iconSize" />
     </button>
 
     <input
@@ -230,7 +261,7 @@ onBeforeUnmount(stopRepeat)
       @pointercancel="stopRepeat"
       @contextmenu.prevent
     >
-      <JeIcon name="plus" :size="14" />
+      <JeIcon name="plus" :size="iconSize" />
     </button>
   </div>
 </template>
@@ -240,8 +271,25 @@ onBeforeUnmount(stopRepeat)
   display: inline-flex;
   align-items: center;
   font-family: inherit;
+  /* 尺寸变量：default 为基础值，修饰类只覆盖这几个变量 */
+  --je-stepper-btn: 26px;
+  --je-stepper-input-w: 40px;
+  --je-stepper-fs: var(--je-control-fs);
+  --je-stepper-radius: var(--je-control-radius);
+}
+
+.je-stepper--small {
+  --je-stepper-btn: 22px;
+  --je-stepper-input-w: 34px;
+  --je-stepper-fs: var(--je-control-fs-sm);
+  --je-stepper-radius: var(--je-control-radius-sm);
+}
+
+.je-stepper--large {
   --je-stepper-btn: 32px;
   --je-stepper-input-w: 48px;
+  --je-stepper-fs: var(--je-control-fs-lg);
+  --je-stepper-radius: var(--je-control-radius-lg);
 }
 
 .je-stepper__btn {
@@ -256,7 +304,7 @@ onBeforeUnmount(stopRepeat)
   cursor: pointer;
   background: var(--je-surface);
   border: 1.5px solid var(--je-border-color);
-  border-radius: var(--je-radius-sm);
+  border-radius: var(--je-stepper-radius);
   outline: none;
   /* 长按连发时不要让浏览器把触摸当成滚动 */
   touch-action: none;
@@ -290,7 +338,7 @@ onBeforeUnmount(stopRepeat)
   margin: 0 8px;
   padding: 0;
   font-family: inherit;
-  font-size: 15px;
+  font-size: var(--je-stepper-fs, 14px);
   font-variant-numeric: tabular-nums;
   color: var(--je-text);
   text-align: center;
@@ -309,10 +357,23 @@ onBeforeUnmount(stopRepeat)
 }
 
 @media (max-width: 768px) {
-  /* 触屏上把加减按钮热区兜到 44px 以上 */
-  .je-stepper__btn {
-    min-width: 44px;
-    min-height: 44px;
+  /* 触屏档：加减按钮与输入框同一条三档（32 / 44 / 50），档位在窄屏同样生效 */
+  .je-stepper {
+    --je-stepper-btn: var(--je-touch-h);
+    --je-stepper-input-w: var(--je-touch-h);
+    --je-stepper-fs: var(--je-touch-fs);
+  }
+
+  .je-stepper--small {
+    --je-stepper-btn: var(--je-touch-h-sm);
+    --je-stepper-input-w: var(--je-touch-h-sm);
+    --je-stepper-fs: var(--je-touch-fs-sm);
+  }
+
+  .je-stepper--large {
+    --je-stepper-btn: var(--je-touch-h-lg);
+    --je-stepper-input-w: var(--je-touch-h-lg);
+    --je-stepper-fs: var(--je-touch-fs-lg);
   }
 }
 </style>

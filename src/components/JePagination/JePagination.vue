@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import JeSelect from '../JeSelect/JeSelect.vue'
 import { useIsMobile } from '../../core/useMediaQuery'
 import { buildPager, type JePagerItem } from './types'
 
@@ -79,10 +80,14 @@ const go = (page: number) => {
   emit('current-change', next)
 }
 
-const onSizeChange = (event: Event) => {
-  const select = event.target as HTMLSelectElement
-  const size = Number(select.value)
-  if (!size) return
+/** 每页条数下拉的选项，文案与原来的原生 select 一致 */
+const sizeOptions = computed(() =>
+  props.pageSizes.map((size) => ({ label: `${size} 条/页`, value: size })),
+)
+
+const onSizeChange = (value: string | number) => {
+  const size = Number(value)
+  if (!size || size === props.pageSize) return
   emit('update:pageSize', size)
   emit('size-change', size)
 
@@ -113,17 +118,20 @@ const onJump = () => {
     <template v-for="(item, index) in layoutItems" :key="`${item}-${index}`">
       <span v-if="item === 'total'" class="je-pagination__total">共 {{ total }} 条</span>
 
-      <label v-else-if="item === 'sizes'" class="je-pagination__sizes">
-        <select
-          :value="pageSize"
+      <div
+        v-else-if="item === 'sizes'"
+        class="je-pagination__sizes"
+        role="group"
+        aria-label="每页条数"
+      >
+        <je-select
+          :model-value="pageSize"
+          :options="sizeOptions"
+          :size="small ? 'small' : 'default'"
           :disabled="disabled"
-          aria-label="每页条数"
-          @change="onSizeChange"
-        >
-          <option v-for="size in pageSizes" :key="size" :value="size">{{ size }} 条/页</option>
-        </select>
-        <JeIcon name="chevron-down" :size="14" />
-      </label>
+          @update:model-value="onSizeChange"
+        />
+      </div>
 
       <button
         v-else-if="item === 'prev'"
@@ -187,6 +195,10 @@ const onJump = () => {
 
 <style scoped>
 .je-pagination {
+  /* 页码按钮 / 每页条数 / 跳页输入共用的高度与字号档位；窄屏只改这两个变量的指向 */
+  --je-pagination-h: 36px;
+  --je-pagination-fs: 13px;
+
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -206,11 +218,11 @@ const onJump = () => {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-width: 36px;
-  height: 36px;
+  min-width: var(--je-pagination-h);
+  height: var(--je-pagination-h);
   padding: 0 6px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--je-pagination-fs);
   font-weight: 500;
   color: var(--je-text-muted);
   background: none;
@@ -251,47 +263,21 @@ const onJump = () => {
   align-items: center;
   justify-content: center;
   min-width: 24px;
-  height: 36px;
+  height: var(--je-pagination-h);
   color: var(--je-text-faint);
   letter-spacing: 2px;
   user-select: none;
 }
 
 .je-pagination__sizes {
-  position: relative;
   display: inline-flex;
   align-items: center;
 }
 
-.je-pagination__sizes select {
-  height: 36px;
-  padding: 0 28px 0 10px;
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--je-text-muted);
-  appearance: none;
-  cursor: pointer;
-  background: var(--je-surface);
-  border: var(--je-border);
-  border-radius: var(--je-radius-sm);
-  outline: none;
-}
-
-.je-pagination__sizes select:focus-visible {
-  outline: 2px solid var(--je-primary);
-  outline-offset: 2px;
-}
-
-.je-pagination__sizes select option {
-  color: #1f2430;
-  background: #ffffff;
-}
-
-.je-pagination__sizes .je-icon {
-  position: absolute;
-  right: 8px;
-  color: var(--je-text-faint);
-  pointer-events: none;
+/* 下拉的高度与字号跟随分页档位，避免和页码按钮错位；选项行仍用 JeSelect 自己的一档 */
+.je-pagination__sizes :deep(.je-select) {
+  --js-h: var(--je-pagination-h);
+  --js-fs: var(--je-pagination-fs);
 }
 
 .je-pagination__jumper {
@@ -302,9 +288,9 @@ const onJump = () => {
 
 .je-pagination__input {
   width: 52px;
-  height: 36px;
+  height: var(--je-pagination-h);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--je-pagination-fs);
   color: var(--je-text);
   text-align: center;
   background: var(--je-surface);
@@ -333,44 +319,31 @@ const onJump = () => {
 }
 
 /* 小尺寸 */
-.je-pagination.is-small .je-pagination__btn {
-  min-width: 28px;
-  height: 28px;
-  font-size: 12px;
-}
-
-.je-pagination.is-small .je-pagination__sizes select,
-.je-pagination.is-small .je-pagination__input {
-  height: 28px;
-}
-
-.je-pagination.is-small .je-pagination__ellipsis {
-  height: 28px;
+.je-pagination.is-small {
+  --je-pagination-h: 28px;
+  --je-pagination-fs: 12px;
 }
 
 .je-pagination.is-disabled {
   opacity: 0.6;
 }
 
-/* 窄屏：热区统一拉到 44px，页码已由 JS 精简为 prev / 当前页 / next */
+/* 窄屏：页码已由 JS 精简为 prev / 当前页 / next；尺寸仍分档，small 落到触屏的小档 */
 @media (max-width: 768px) {
   .je-pagination {
+    --je-pagination-h: var(--je-touch-h);
+    --je-pagination-fs: var(--je-touch-fs);
     gap: 6px;
   }
 
-  .je-pagination__btn,
-  .je-pagination.is-small .je-pagination__btn,
-  .je-pagination__sizes select,
-  .je-pagination.is-small .je-pagination__sizes select,
-  .je-pagination__input,
-  .je-pagination.is-small .je-pagination__input {
-    min-width: 44px;
-    height: 44px;
+  .je-pagination.is-small {
+    --je-pagination-h: var(--je-touch-h-sm);
+    --je-pagination-fs: var(--je-touch-fs-sm);
   }
 
-  .je-pagination__ellipsis,
-  .je-pagination.is-small .je-pagination__ellipsis {
-    height: 44px;
+  /* 跳页是真实输入框，字号低于 16px 时 iOS 聚焦会自动放大页面 */
+  .je-pagination__input {
+    font-size: max(16px, var(--je-pagination-fs));
   }
 }
 

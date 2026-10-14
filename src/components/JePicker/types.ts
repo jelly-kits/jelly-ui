@@ -10,6 +10,9 @@ export interface JePickerOption {
   disabled?: boolean
 }
 
+/** 触发器尺寸 */
+export type JePickerSize = 'small' | 'default' | 'large'
+
 /** 滚轮选择器的一列 */
 export interface JePickerColumn {
   /** 列标识，仅用于 key 与无障碍标签 */

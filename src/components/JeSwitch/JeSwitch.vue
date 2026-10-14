@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { JeIcon } from '../JeIcon'
-import type { JeSwitchValue } from './types'
+import { useJeConfigSize } from '../JeConfigProvider/types'
+import type { JeSwitchSize, JeSwitchValue } from './types'
 
 defineOptions({ name: 'JeSwitch' })
 
@@ -16,6 +17,8 @@ const props = withDefaults(
     inactiveText?: string
     disabled?: boolean
     loading?: boolean
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider） */
+    size?: JeSwitchSize
   }>(),
   {
     modelValue: false,
@@ -23,12 +26,23 @@ const props = withDefaults(
     inactiveValue: false,
     disabled: false,
     loading: false,
+    size: undefined,
   },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: JeSwitchValue] }>()
 
 const checked = computed(() => props.modelValue === props.activeValue)
+
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
+/** default 不产生类名（基础样式即 default） */
+const sizeClass = computed(() => (size.value === 'default' ? '' : `je-switch--${size.value}`))
+
+/** loading 图标随尺寸缩放 */
+const ICON_SIZE: Record<JeSwitchSize, number> = { small: 10, default: 12, large: 14 }
+const iconSize = computed(() => ICON_SIZE[size.value])
 
 const toggle = () => {
   if (props.disabled || props.loading) return
@@ -40,7 +54,7 @@ const toggle = () => {
   <button
     type="button"
     class="je-switch"
-    :class="{ 'is-checked': checked, 'is-loading': loading }"
+    :class="[sizeClass, { 'is-checked': checked, 'is-loading': loading }]"
     role="switch"
     :aria-checked="checked"
     :disabled="disabled || loading"
@@ -52,7 +66,7 @@ const toggle = () => {
 
     <span class="je-switch__track">
       <span class="je-switch__thumb">
-        <JeIcon v-if="loading" name="loading" :size="12" spin />
+        <JeIcon v-if="loading" name="loading" :size="iconSize" spin />
       </span>
     </span>
 
@@ -64,6 +78,13 @@ const toggle = () => {
 
 <style scoped>
 .je-switch {
+  /* 尺寸变量：default 为基础值，修饰类只覆盖这几个变量 */
+  --je-sw-track-w: 44px;
+  --je-sw-track-h: 24px;
+  --je-sw-thumb: 19px;
+  --je-sw-inset: 2px;
+  --je-sw-shift: 21px;
+  --je-sw-text-fs: 13px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -75,12 +96,30 @@ const toggle = () => {
   outline: none;
 }
 
+.je-switch--small {
+  --je-sw-track-w: 36px;
+  --je-sw-track-h: 20px;
+  --je-sw-thumb: 15px;
+  --je-sw-inset: 2px;
+  --je-sw-shift: 17px;
+  --je-sw-text-fs: 12px;
+}
+
+.je-switch--large {
+  --je-sw-track-w: 52px;
+  --je-sw-track-h: 28px;
+  --je-sw-thumb: 23px;
+  --je-sw-inset: 2px;
+  --je-sw-shift: 25px;
+  --je-sw-text-fs: 14px;
+}
+
 .je-switch__track {
   position: relative;
   display: inline-block;
   box-sizing: border-box;
-  width: 52px;
-  height: 30px;
+  width: var(--je-sw-track-w, 44px);
+  height: var(--je-sw-track-h, 24px);
   background: var(--je-surface);
   border: 1.5px solid var(--je-border-color);
   border-radius: 999px;
@@ -97,14 +136,14 @@ const toggle = () => {
 
 .je-switch__thumb {
   position: absolute;
-  top: 3px;
-  left: 3px;
+  top: var(--je-sw-inset, 2px);
+  left: var(--je-sw-inset, 2px);
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 21px;
-  height: 21px;
+  width: var(--je-sw-thumb, 19px);
+  height: var(--je-sw-thumb, 19px);
   color: var(--je-primary);
   background: #fff;
   border-radius: 50%;
@@ -114,11 +153,11 @@ const toggle = () => {
 }
 
 .je-switch.is-checked .je-switch__thumb {
-  transform: translateX(22px);
+  transform: translateX(var(--je-sw-shift, 21px));
 }
 
 .je-switch__text {
-  font-size: 13px;
+  font-size: var(--je-sw-text-fs, 13px);
   color: var(--je-text-faint);
   transition: color 0.25s ease;
 }

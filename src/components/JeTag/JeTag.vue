@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import { useJeConfigSize } from '../JeConfigProvider/types'
 import type { JeTagEffect, JeTagSize, JeTagType } from './types'
 
 defineOptions({ name: 'JeTag' })
@@ -16,7 +17,7 @@ const props = withDefaults(
   }>(),
   {
     type: 'primary',
-    size: 'default',
+    size: undefined,
     effect: 'light',
     closable: false,
     round: false,
@@ -26,9 +27,12 @@ const props = withDefaults(
 
 const emit = defineEmits<{ close: [event: MouseEvent] }>()
 
+/** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
+const size = useJeConfigSize(() => props.size)
+
 /** 关闭图标随尺寸缩放，避免小标签里图标过大 */
 const CLOSE_SIZE: Record<JeTagSize, number> = { small: 10, default: 12, large: 14 }
-const closeSize = computed(() => CLOSE_SIZE[props.size])
+const closeSize = computed(() => CLOSE_SIZE[size.value])
 
 const onClose = (event: MouseEvent) => {
   if (props.disabled) return

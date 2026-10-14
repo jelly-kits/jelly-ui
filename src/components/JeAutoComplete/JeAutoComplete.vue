@@ -8,9 +8,10 @@ import { useSheetDrag } from '../../core/useSheetDrag'
 import { nextZIndex } from '../../core/useZIndex'
 import { JeIcon } from '../JeIcon'
 import { JeInput } from '../JeInput'
+import type { JeInputSize } from '../JeInput'
 import type { JeAutoCompleteOption } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
-import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
 
 defineOptions({ name: 'JeAutoComplete' })
 
@@ -30,6 +31,8 @@ const props = withDefaults(
     debounce?: number
     loadingText?: string
     emptyText?: string
+    /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider）；透传给内部输入框 */
+    size?: JeInputSize
     /** 浮层挂载点：选择器或元素；false 表示就地渲染不传送。缺省时按 ConfigProvider → configureJelly → body 回退 */
     teleportTo?: JeTeleportTarget | false
   }>(),
@@ -42,12 +45,19 @@ const props = withDefaults(
     debounce: 300,
     loadingText: '加载中…',
     emptyText: '无匹配结果',
+    size: undefined,
     teleportTo: undefined,
   },
 )
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
+
+/** 尺寸：透传给内部输入框，面板选项样式也跟随；default 不产生类名 */
+const size = useJeConfigSize(() => props.size)
+const panelSizeClass = computed(() =>
+  size.value === 'default' ? '' : `je-autocomplete__panel--${size.value}`,
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -279,6 +289,7 @@ onBeforeUnmount(() => {
         :model-value="inputValue"
         :placeholder="placeholder"
         :disabled="disabled"
+        :size="size"
         role="combobox"
         aria-autocomplete="list"
         :aria-expanded="isOpen"
@@ -314,7 +325,7 @@ onBeforeUnmount(() => {
         :id="listId"
         ref="panelRef"
         class="je-autocomplete__panel"
-        :class="{ 'is-open': isOpen }"
+        :class="[panelSizeClass, { 'is-open': isOpen }]"
         :style="panelStyle"
         role="listbox"
         aria-label="候选项"
@@ -434,11 +445,30 @@ onBeforeUnmount(() => {
 }
 
 .je-autocomplete__option {
-  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  min-height: var(--je-control-h);
+  padding: 0 var(--je-control-px);
+  font-size: var(--je-control-fs);
   color: var(--je-text-muted);
-  border-radius: var(--je-radius-sm);
+  border-radius: var(--je-control-radius-sm);
   cursor: pointer;
   transition: background var(--je-duration) ease, color var(--je-duration) ease;
+}
+
+/* 尺寸档位：default 直接引用全局控件 token，这里只覆盖 small / large */
+.je-autocomplete__panel--small .je-autocomplete__option {
+  min-height: var(--je-control-h-sm);
+  padding: 0 var(--je-control-px-sm);
+  font-size: var(--je-control-fs-sm);
+  border-radius: var(--je-control-radius-sm);
+}
+
+.je-autocomplete__panel--large .je-autocomplete__option {
+  min-height: var(--je-control-h-lg);
+  padding: 0 var(--je-control-px-lg);
+  font-size: var(--je-control-fs-lg);
+  border-radius: var(--je-control-radius-lg);
 }
 
 .je-autocomplete__option:hover,

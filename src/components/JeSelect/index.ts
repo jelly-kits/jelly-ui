@@ -1,2 +1,2 @@
 export { default as JeSelect } from './JeSelect.vue'
-export type { JeSelectOption } from './types'
+export type { JeSelectOption, JeSelectSize } from './types'
