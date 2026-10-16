@@ -4,6 +4,7 @@ import { useFocusTrap } from '../../core/useFocusTrap'
 import { useScrollLock } from '../../core/useScrollLock'
 import { nextZIndex } from '../../core/useZIndex'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import { useJeLocale } from '../JeLocale'
 import type { JeIconName } from '../JeIcon/icons'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useTeleportTarget } from '../JeConfigProvider/types'
@@ -75,6 +76,8 @@ const emit = defineEmits<{
   /** 点击遮罩 */
   clickOverlay: []
 }>()
+
+const { t } = useJeLocale()
 
 const contentRef = ref<HTMLElement | null>(null)
 const innerZIndex = ref(nextZIndex())
@@ -148,7 +151,7 @@ const onOverlayClick = () => {
           type="button"
           class="je-popup__close"
           :class="`je-popup__close--${closeIconPosition}`"
-          aria-label="关闭"
+          :aria-label="t('close')"
           @click="close"
         >
           <JeIcon :name="closeIcon" :size="16" />

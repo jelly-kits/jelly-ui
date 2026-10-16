@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import JeIcon from '../JeIcon/JeIcon.vue'
 import { useJeConfigSize } from '../JeConfigProvider/types'
+import { useJeLocale } from '../JeLocale'
 
 defineOptions({ name: 'JeSearch' })
 
@@ -20,7 +21,7 @@ const props = withDefaults(
     maxlength?: number
     /** 右侧显示「取消」按钮（移动端常见） */
     showCancel?: boolean
-    /** 取消按钮文案 */
+    /** 取消按钮文案，未传时用语言包的 cancel 文案 */
     cancelText?: string
     /** 有内容时显示清除按钮 */
     clearable?: boolean
@@ -36,7 +37,7 @@ const props = withDefaults(
     readonly: false,
     maxlength: undefined,
     showCancel: false,
-    cancelText: '取消',
+    cancelText: undefined,
     clearable: true,
     size: undefined,
   },
@@ -53,6 +54,11 @@ const emit = defineEmits<{
   focus: [event: FocusEvent]
   blur: [event: FocusEvent]
 }>()
+
+const { t } = useJeLocale()
+
+/** 取消按钮文案：外部传了就用外部值，否则取语言包 */
+const cancelLabel = computed(() => props.cancelText ?? t('cancel'))
 
 const focused = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
@@ -154,7 +160,7 @@ const onBlur = (event: FocusEvent) => {
       :disabled="disabled"
       @click="onCancel"
     >
-      {{ cancelText }}
+      {{ cancelLabel }}
     </button>
   </div>
 </template>

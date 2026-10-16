@@ -27,6 +27,7 @@ import type {
 } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeLocale } from '../JeLocale'
 
 defineOptions({ name: 'JeUpload' })
 
@@ -144,6 +145,8 @@ const emit = defineEmits<{
   /** 上传失败 */
   error: [error: Error, file: JeUploadFile]
 }>()
+
+const { t } = useJeLocale()
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const rootRef = ref<HTMLElement | null>(null)
@@ -988,7 +991,7 @@ defineExpose({
       </div>
 
       <div class="je-upload__viewer-toolbar" @click.stop>
-        <button type="button" class="je-upload__viewer-tool" aria-label="关闭" @click="closePreview">
+        <button type="button" class="je-upload__viewer-tool" :aria-label="t('close')" @click="closePreview">
           <JeIcon name="close" :size="20" />
         </button>
       </div>

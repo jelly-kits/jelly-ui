@@ -7,6 +7,7 @@ import { nextZIndex } from '../../core/useZIndex'
 import { JeButton } from '../JeButton'
 import { JeIcon } from '../JeIcon'
 import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeLocale } from '../JeLocale'
 import type { JeDialogDone, JeDialogProps } from './types'
 
 defineOptions({ name: 'JeDialog' })
@@ -68,6 +69,8 @@ const emit = defineEmits<{
   /** 内置页脚的取消按钮走完流程后触发（被 before-close 拦下时不触发） */
   cancel: []
 }>()
+
+const { t } = useJeLocale()
 
 /** 打开动画时长，与样式里的 .42s 对齐；打开后要等它跑完才算 opened */
 const OPEN_ANIMATION_MS = 420
@@ -206,7 +209,7 @@ const isMobile = useIsMobile()
 /** 取消按钮：showCancelButton 或 cancelButtonText 满足其一即显示；没给文案时用默认「取消」 */
 const showCancel = computed(() => props.showCancelButton || props.cancelButtonText !== undefined)
 
-const cancelText = computed(() => props.cancelButtonText ?? '取消')
+const cancelText = computed(() => props.cancelButtonText ?? t('cancel'))
 
 /** auto 交给窄屏判定（≤768px 竖排），inline / stacked 则原样透出 */
 const layout = computed(() =>
@@ -384,8 +387,8 @@ defineExpose({
             v-if="showClose"
             type="button"
             class="je-dialog__close"
-            aria-label="关闭"
-            title="关闭"
+            :aria-label="t('close')"
+            :title="t('close')"
             @click="handleClose"
           >
             <!-- 字符串走内置图标集，传组件时原样渲染，省得为换图标去改源码 -->

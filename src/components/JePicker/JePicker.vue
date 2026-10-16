@@ -8,6 +8,7 @@ import { nextZIndex } from '../../core/useZIndex'
 import type { JePickerColumn, JePickerOption, JePickerSize } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeLocale } from '../JeLocale'
 
 defineOptions({ name: 'JePicker' })
 
@@ -23,9 +24,9 @@ const props = withDefaults(
     placeholder?: string
     /** 禁用整个选择器 */
     disabled?: boolean
-    /** 确认按钮文字 */
+    /** 确认按钮文字，未传时用语言包的 confirm 文案 */
     confirmText?: string
-    /** 取消按钮文字 */
+    /** 取消按钮文字，未传时用语言包的 cancel 文案 */
     cancelText?: string
     /** 是否显示顶部工具栏（取消 / 标题 / 确认） */
     showToolbar?: boolean
@@ -46,8 +47,8 @@ const props = withDefaults(
     title: '',
     placeholder: '请选择',
     disabled: false,
-    confirmText: '确认',
-    cancelText: '取消',
+    confirmText: undefined,
+    cancelText: undefined,
     showToolbar: true,
     visibleItemCount: 5,
     itemHeight: 44,
@@ -77,6 +78,12 @@ const emit = defineEmits<{
   /** 点击取消或遮罩 */
   cancel: []
 }>()
+
+const { t } = useJeLocale()
+
+/** 工具栏按钮文案：外部传了就用外部值，否则取语言包 */
+const confirmLabel = computed(() => props.confirmText ?? t('confirm'))
+const cancelLabel = computed(() => props.cancelText ?? t('cancel'))
 
 const uid = useId()
 const panelRef = ref<HTMLElement | null>(null)
@@ -278,7 +285,7 @@ onBeforeUnmount(() => {
 
           <div v-if="showToolbar" class="je-picker__toolbar">
             <button type="button" class="je-picker__toolbar-btn" @click="onCancel">
-              {{ cancelText }}
+              {{ cancelLabel }}
             </button>
             <h2 class="je-picker__title">{{ title }}</h2>
             <button
@@ -286,7 +293,7 @@ onBeforeUnmount(() => {
               class="je-picker__toolbar-btn je-picker__toolbar-btn--confirm"
               @click="onConfirm"
             >
-              {{ confirmText }}
+              {{ confirmLabel }}
             </button>
           </div>
 

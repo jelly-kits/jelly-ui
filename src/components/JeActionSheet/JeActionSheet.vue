@@ -8,6 +8,7 @@ import { nextZIndex } from '../../core/useZIndex'
 import type { JeActionSheetAction } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeLocale } from '../JeLocale'
 
 defineOptions({ name: 'JeActionSheet' })
 
@@ -20,7 +21,7 @@ const props = withDefaults(
     title?: string
     /** 标题下方的说明文字 */
     description?: string
-    /** 取消按钮文字，传空字符串则不显示取消按钮 */
+    /** 取消按钮文字，未传时用语言包的 cancel 文案；传空字符串则不显示取消按钮 */
     cancelText?: string
     /** 点击操作项后自动关闭 */
     closeOnClickAction?: boolean
@@ -36,7 +37,7 @@ const props = withDefaults(
     actions: () => [],
     title: undefined,
     description: undefined,
-    cancelText: '取消',
+    cancelText: undefined,
     closeOnClickAction: true,
     closeOnClickModal: true,
     closeOnEscape: true,
@@ -56,6 +57,11 @@ const emit = defineEmits<{
   open: []
   close: []
 }>()
+
+const { t } = useJeLocale()
+
+/** 取消按钮文案：外部传了就用外部值，否则取语言包 */
+const cancelLabel = computed(() => props.cancelText ?? t('cancel'))
 
 const panelRef = ref<HTMLElement | null>(null)
 const zIndex = ref(nextZIndex())
@@ -176,9 +182,9 @@ watch(
           </slot>
         </div>
 
-        <div v-if="cancelText" class="je-action-sheet__cancel-wrap">
+        <div v-if="cancelLabel" class="je-action-sheet__cancel-wrap">
           <button type="button" class="je-action-sheet__cancel" @click="onCancel">
-            {{ cancelText }}
+            {{ cancelLabel }}
           </button>
         </div>
       </div>

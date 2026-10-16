@@ -11,6 +11,7 @@ import type { JePopconfirmType } from './types'
 import type { JePlacementValue } from '../../core/useFloating'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeLocale } from '../JeLocale'
 
 defineOptions({ name: 'JePopconfirm' })
 
@@ -19,7 +20,9 @@ const props = withDefaults(
     modelValue?: boolean
     title?: string
     content?: string
+    /** 确认按钮文字，未传时用语言包的 confirm 文案 */
     confirmText?: string
+    /** 取消按钮文字，未传时用语言包的 cancel 文案 */
     cancelText?: string
     placement?: JePlacementValue
     /** 确认按钮语义色 */
@@ -33,8 +36,8 @@ const props = withDefaults(
     modelValue: false,
     title: '',
     content: '',
-    confirmText: '确定',
-    cancelText: '取消',
+    confirmText: undefined,
+    cancelText: undefined,
     placement: 'top',
     type: 'primary',
     width: 220,
@@ -50,6 +53,12 @@ const emit = defineEmits<{
   confirm: []
   cancel: []
 }>()
+
+const { t } = useJeLocale()
+
+/** 按钮文案：外部传了就用外部值，否则取语言包 */
+const confirmLabel = computed(() => props.confirmText ?? t('confirm'))
+const cancelLabel = computed(() => props.cancelText ?? t('cancel'))
 
 const uid = useId()
 const triggerRef = ref<HTMLElement | null>(null)
@@ -209,8 +218,8 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
       </div>
 
       <div class="je-popconfirm__actions">
-        <JeButton variant="ghost" @click="onCancel">{{ cancelText }}</JeButton>
-        <JeButton @click="onConfirm">{{ confirmText }}</JeButton>
+        <JeButton variant="ghost" @click="onCancel">{{ cancelLabel }}</JeButton>
+        <JeButton @click="onConfirm">{{ confirmLabel }}</JeButton>
       </div>
 
       <span v-if="!isMobile" class="je-popconfirm__arrow" :style="arrowStyle" aria-hidden="true" />

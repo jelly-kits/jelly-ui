@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, provide, ref, watch } from 'vue'
 import { JeEmpty } from '../JeEmpty'
+import { useJeLocale } from '../JeLocale'
 import JeTreeNodeView from './JeTreeNodeView.vue'
 import { JE_TREE_CONTEXT, type JeTreeNode, type JeTreeContext } from './types'
 
@@ -17,6 +18,7 @@ const props = withDefaults(
     defaultExpandAll?: boolean
     defaultExpandedKeys?: Array<string | number>
     expandOnClickNode?: boolean
+    /** 数据为空时的提示文案，未传时用语言包的 empty 文案 */
     emptyText?: string
   }>(),
   {
@@ -27,7 +29,7 @@ const props = withDefaults(
     accordion: false,
     defaultExpandAll: false,
     expandOnClickNode: true,
-    emptyText: '暂无数据',
+    emptyText: undefined,
   },
 )
 
@@ -38,6 +40,11 @@ const emit = defineEmits<{
   'node-expand': [keys: Array<string | number>]
   'node-collapse': [keys: Array<string | number>]
 }>()
+
+const { t } = useJeLocale()
+
+/** 空态文案：外部传了就用外部值，否则取语言包 */
+const emptyLabel = computed(() => props.emptyText ?? t('empty'))
 
 const rootRef = ref<HTMLElement | null>(null)
 
@@ -298,7 +305,7 @@ provide(JE_TREE_CONTEXT, context)
     </template>
 
     <div v-else class="je-tree__empty">
-      <JeEmpty :description="emptyText" :image-size="80" />
+      <JeEmpty :description="emptyLabel" :image-size="80" />
     </div>
   </div>
 </template>

@@ -4,6 +4,7 @@ import { useFocusTrap } from '../../core/useFocusTrap'
 import { useScrollLock } from '../../core/useScrollLock'
 import { nextZIndex } from '../../core/useZIndex'
 import { JeIcon } from '../JeIcon'
+import { useJeLocale } from '../JeLocale'
 import type { JeImageFit } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useTeleportTarget } from '../JeConfigProvider/types'
@@ -50,6 +51,8 @@ const emit = defineEmits<{
   error: []
   close: []
 }>()
+
+const { t } = useJeLocale()
 
 const toCssSize = (value?: string | number) => (typeof value === 'number' ? `${value}px` : value)
 
@@ -284,7 +287,7 @@ const viewerImgStyle = computed(() => ({
           <button
             type="button"
             class="je-image__viewer-tool"
-            aria-label="关闭"
+            :aria-label="t('close')"
             @click="closeViewer"
           >
             <JeIcon name="close" :size="20" />

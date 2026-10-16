@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { JeIcon } from '../JeIcon'
+import { useJeLocale } from '../JeLocale'
 import type { JeAlertType } from './types'
 
 defineOptions({ name: 'JeAlert' })
+
+const { t } = useJeLocale()
 
 withDefaults(
   defineProps<{
@@ -48,7 +51,7 @@ const emit = defineEmits<{ close: [] }>()
       v-if="closable"
       type="button"
       class="je-alert__close"
-      aria-label="关闭"
+      :aria-label="t('close')"
       @click="emit('close')"
     >
       <JeIcon name="close" :size="16" />

@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, watch } from 'vue'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useTeleportTarget } from '../JeConfigProvider/types'
 import { JeIcon, type JeIconName } from '../JeIcon'
+import { useJeLocale } from '../JeLocale'
 import type { JeMessageType } from './types'
 
 defineOptions({ name: 'JeMessage' })
@@ -39,6 +40,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   close: []
 }>()
+
+const { t } = useJeLocale()
 
 /**
  * 浮层挂载点。teleportTo 优先；旧的 teleport=false 仍表示就地渲染。
@@ -108,7 +111,7 @@ const layerStyle = computed(() =>
           v-if="showClose"
           type="button"
           class="je-message__close"
-          aria-label="关闭"
+          :aria-label="t('close')"
           @click="close"
         >
           <JeIcon name="close" :size="14" />

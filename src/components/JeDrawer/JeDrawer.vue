@@ -4,6 +4,7 @@ import { useFocusTrap } from '../../core/useFocusTrap'
 import { useScrollLock } from '../../core/useScrollLock'
 import { nextZIndex } from '../../core/useZIndex'
 import { JeIcon } from '../JeIcon'
+import { useJeLocale } from '../JeLocale'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useTeleportTarget } from '../JeConfigProvider/types'
 
@@ -46,6 +47,8 @@ const emit = defineEmits<{
   open: []
   close: []
 }>()
+
+const { t } = useJeLocale()
 
 const panelRef = ref<HTMLElement | null>(null)
 const zIndex = ref(nextZIndex())
@@ -113,7 +116,7 @@ watch(
             v-if="showClose"
             type="button"
             class="je-drawer__close"
-            aria-label="关闭"
+            :aria-label="t('close')"
             @click="close"
           >
             <JeIcon name="close" :size="18" />

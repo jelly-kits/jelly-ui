@@ -40,6 +40,16 @@
       "import": "./dist/jelly-ui.js",
       "require": "./dist/jelly-ui.cjs"
     },
+    "./editor": {
+      "types": "./dist/editor.d.ts",
+      "import": "./dist/editor.js",
+      "require": "./dist/editor.cjs"
+    },
+    "./sortable": {
+      "types": "./dist/sortable.d.ts",
+      "import": "./dist/sortable.js",
+      "require": "./dist/sortable.cjs"
+    },
     "./style.css": "./dist/style.css",
     "./package.json": "./package.json"
   },
@@ -56,15 +66,52 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "peerDependencies": {
+    "@tiptap/core": "^3.32.0",
+    "@tiptap/extension-image": "^3.32.0",
+    "@tiptap/extensions": "^3.32.0",
+    "@tiptap/pm": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0",
+    "@tiptap/vue-3": "^3.32.0",
+    "sortablejs": "^1.15.0",
     "vue": "^3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "@tiptap/core": {
+      "optional": true
+    },
+    "@tiptap/extension-image": {
+      "optional": true
+    },
+    "@tiptap/extensions": {
+      "optional": true
+    },
+    "@tiptap/pm": {
+      "optional": true
+    },
+    "@tiptap/starter-kit": {
+      "optional": true
+    },
+    "@tiptap/vue-3": {
+      "optional": true
+    },
+    "sortablejs": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
+    "@tiptap/core": "^3.32.0",
+    "@tiptap/extension-image": "^3.32.0",
+    "@tiptap/extensions": "^3.32.0",
+    "@tiptap/pm": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0",
+    "@tiptap/vue-3": "^3.32.0",
     "@types/node": "^26.6.3",
     "@vitejs/plugin-vue": "^5.2.1",
+    "sortablejs": "^1.15.6",
     "typescript": "~5.6.3",
     "vite": "^5.4.11",
     "vue": "^3.5.13",

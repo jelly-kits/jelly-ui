@@ -148,6 +148,9 @@ node node_modules\vite\bin\vite.js --port 5180 --strictPort --host 127.0.0.1
 ## 10. 提交与 PR
 
 - **改动与它牵动的文档、译文、README 放在同一个 PR** —— 组件、`demo/pages/`、`demo/i18n/en-US.ts`、`demo/api-data.ts` 与 `README.md` / `README.en.md` 有其一漏掉都不算完整。
-- **提交信息说明「为什么」**，而不只是「改了什么」。
+- **有面向使用方的改动，就在 `CHANGELOG.md` 的「未发布」小节记一笔**（分类口径见该文件开头）。
+  这是给使用方看的唯一更新说明入口，发版时会被原样取出来发成 GitHub Release。
+- **提交信息说明「为什么」**，而不只是「改了什么」。唯一的例外是**发版提交**：`npm version` 产生的那一次
+  只写版本号（如 `0.2.1`），说明一律留在 `CHANGELOG.md`，不塞进提交信息。
 - **提交前确认上面的命令全绿**：`npm run gen:api`、`npm run typecheck`、`npm run build`、`npm run build:demo`，以及第 8 节的译文 / 动效审计脚本。
 - 子路径部署用 `npm run build:demo -- --base=/仓库名/`（`base` 必须写成 `/<仓库名>/`）。

@@ -1,5 +1,6 @@
 import { createApp, defineComponent, h, ref, type App } from 'vue'
 import { getJellyConfig, resolveTeleportElement } from '../../core/globalConfig'
+import { resolveLocale } from '../JeLocale'
 import JeDialog from './JeDialog.vue'
 import type {
   JeDialogAction,
@@ -138,13 +139,16 @@ export function showDialog(options: JeDialogOptions): Promise<JeDialogAction> & 
 }
 
 /** 双键对话框：确认 / 取消都在，关闭动作与组件式写法完全一致 */
-showDialog.confirm = (options: JeDialogOptions): Promise<JeDialogAction> =>
-  showDialog({
+showDialog.confirm = (options: JeDialogOptions): Promise<JeDialogAction> => {
+  // 命令式实例挂在组件树之外，拿不到 provide 链，只能读应用级配置里的语言包
+  const pack = resolveLocale(getJellyConfig().locale)
+  return showDialog({
     showCancelButton: true,
     ...options,
-    confirmButtonText: options.confirmButtonText ?? '确定',
-    cancelButtonText: options.cancelButtonText ?? '取消',
+    confirmButtonText: options.confirmButtonText ?? pack.confirm,
+    cancelButtonText: options.cancelButtonText ?? pack.cancel,
   })
+}
 
 /** 单键对话框：只有确认按钮，点确认 resolve 'confirm'，遮罩 / Esc 关掉 resolve 'close' */
 showDialog.alert = (options: JeDialogOptions): Promise<JeDialogAction> =>

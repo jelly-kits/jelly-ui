@@ -6,8 +6,8 @@
 
 Vue 3 **Jelly** UI Component Library, plus a built-in documentation site. The design source is [`test.html`](https://github.com/jelly-kits/jelly-ui/blob/main/test.html) in the repo root (the spring / jelly motion prototype).
 
-- **Zero runtime dependencies** (icons are built-in hand-drawn SVGs); `vue` is the only peer dependency
-- Scale: 113 component folders / 134 exported components / 108 documentation pages
+- **Zero runtime dependencies** (icons are built-in hand-drawn SVGs); `vue` is the only peer dependency. The rich-text editor sub-entry (`/editor`) additionally depends on tiptap and the drag-and-drop sorting sub-entry (`/sortable`) on sortablejs, whose packages are declared as **optional peers** and are only needed if you use them
+- Scale: 117 component folders / 137 components / 111 documentation pages
 
 ## Install & Usage
 
@@ -52,6 +52,102 @@ createApp(App).use(JellyUI).mount('#app')
 - The ESM build declares `sideEffects` (CSS only), so unused components can be tree-shaken away.
 - For the imperative APIs (`showMessage` / `showDialog` / `showLoading`) and everything else, see the [online docs](https://jelly-kits.github.io/jelly-ui/) (sources live in [`demo/pages/`](https://github.com/jelly-kits/jelly-ui/tree/main/demo/pages); run `npm run dev` locally).
 
+## Rich-Text Editor (optional sub-entry)
+
+`@jelly-kits/jelly-ui/editor` ships `JeEditor`, a lightweight rich-text editor: text formatting, H1 / H2 headings, bullet / ordered lists, hyperlinks, images, and video, without complex layouts such as text wrapping around images. It is built on [Tiptap](https://tiptap.dev/), and the related packages are declared as **optional peers** — install them only if you actually import the editor:
+
+```bash
+npm install @tiptap/vue-3 @tiptap/starter-kit @tiptap/core @tiptap/pm @tiptap/extension-image @tiptap/extensions
+```
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { JeEditor, type JeEditorUpload } from '@jelly-kits/jelly-ui/editor'
+
+const html = ref('<p>Hello</p>')
+
+// Upload callback for images / video: return the final URL; onProgress drives the panel progress
+const upload: JeEditorUpload = async (file, { onProgress }) => {
+  onProgress(50)
+  return 'https://cdn.example.com/uploaded.png'
+}
+</script>
+
+<template>
+  <je-editor v-model="html" :upload="upload" placeholder="Enter content…" />
+</template>
+```
+
+- `v-model` carries an HTML string by default; set `value-type="json"` to carry a Tiptap document object instead.
+- Without the `upload` callback, the image / video panels only offer a "type or paste a URL" field.
+- The editor is **not exported from the main entry**, so projects that do not use it are never asked to install tiptap.
+- For the remaining props (`disabled` / `minHeight` / `placeholder`), events, and exposed methods, see the Editor page in the [online docs](https://jelly-kits.github.io/jelly-ui/#/en-US/editor).
+
+## Block Editor
+
+`JeBlockEditor` breaks content into "blocks": one paragraph of text, one image, one video, and one hyperlink each take a block of their own, every block fills a row, and blocks can be dragged to reorder. The data is **plain JSON with no HTML**, so other platforms (mini-programs, native apps, …) can render it by branching on `type` — `JeBlockView` is the reference implementation for the display side. Both are exported from the main entry and add no extra dependencies.
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { JeBlockEditor, JeBlockView, type JeBlockDocument, type JeBlockUpload } from '@jelly-kits/jelly-ui'
+
+const doc = ref<JeBlockDocument>({
+  version: 1,
+  blocks: [{ id: 'b1', type: 'text', text: 'One paragraph is one block' }],
+})
+
+// Image / video upload: called once per file, returns a reachable URL; called for each file when picking several
+const upload: JeBlockUpload = async (file) => 'https://cdn.example.com/uploaded.png'
+</script>
+
+<template>
+  <je-block-editor v-model="doc" :upload="upload" />
+  <je-block-view :value="doc" />
+</template>
+```
+
+- Every block is just a preview until you **click it to select**; only then does its header show the icons (drag handle + edit / move up / move down / duplicate / remove). Click "Edit" — or simply **double-click the block** — to change it in a centered dialog; the data is written back only after you confirm.
+- Without `upload` you can only type or paste a URL; with it, images can be picked several at a time — the first one fills the current block and each of the rest becomes a new image block right after it.
+- Video blocks render only the poster plus a play button by default; the player is mounted and auto-plays only after you click play, so nothing is downloaded on page load.
+- Images and videos support width (25% / 50% / 75% / 100% presets, or a custom value with `%` / `px`), height (leave it empty to keep the natural aspect ratio), and fit (mapped to `object-fit`: `contain` / `cover` / `fill`).
+- `blockTypes` limits which block types can be added; `toolbar` and `blockActions` are "whitelist + order + custom buttons" and their callbacks receive the block and its index.
+- For the remaining props, events, and exposed methods, see the BlockEditor page in the [online docs](https://jelly-kits.github.io/jelly-ui/#/en-US/block-editor).
+
+## Drag-and-drop sorting (optional sub-entry)
+
+`@jelly-kits/jelly-ui/sortable` provides `JeDragSort`: bind an array with `v-model` and you can reorder it by dragging, with multi-select group dragging and a mouse-following preview. It is built on [Sortable.js](https://github.com/SortableJS/Sortable), and `sortablejs` is declared as an **optional peer** — install it only if you actually import the component:
+
+```bash
+npm install sortablejs
+```
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { JeDragSort } from '@jelly-kits/jelly-ui/sortable'
+
+const items = ref([
+  { id: 1, name: 'User Center' },
+  { id: 2, name: 'Order Management' },
+])
+</script>
+
+<template>
+  <je-drag-sort v-model="items">
+    <template #item="{ item }">{{ item.name }}</template>
+  </je-drag-sort>
+</template>
+```
+
+- `item-key` names the unique-key field (defaults to `id`); `handle` restricts dragging to a handle; `draggable` limits which children inside the container count as items.
+- `target` points at a container already on the page (selector / element / ref) and the component then stops rendering its own list, wiring dragging directly onto that element.
+- Clicking an item toggles multi-select (set `selectable` to false for single-item only), and dragging any selected item moves the whole group; selection changes are emitted through `update:selectedIds`.
+- In the built-in mode the `item` slot customizes each card, while `itemMinWidth` and `height` control the card's minimum width and the list viewport height.
+- The component is **not exported from the main entry**: projects that do not use it are never asked to install sortablejs.
+- For the remaining props, events, and exposed methods, see the DragSort page in the [online docs](https://jelly-kits.github.io/jelly-ui/#/en-US/drag-sort).
+
 ## Local Development
 
 ```bash
@@ -73,7 +169,9 @@ npm run dev        # start the docs site (runs gen:api first)
 src/components/   Components (Je* prefix, je- CSS class names)
 src/core/         Animation & overlay kernels (spring / useFloating / useZIndex / useFocusTrap …)
 src/theme/        Global CSS tokens
-demo/pages/       Documentation pages (108, 1:1 with routes)
+src/editor.ts     Rich-text editor sub-entry (@jelly-kits/jelly-ui/editor)
+src/sortable.ts   Drag-and-drop sorting sub-entry (@jelly-kits/jelly-ui/sortable)
+demo/pages/       Documentation pages (111, 1:1 with routes)
 scripts/          gen-api.mjs (API table generation), api-glossary.mjs (fallback glossary)
 .github/workflows/  deploy-demo.yml — pushes to main auto-publish the docs site to GitHub Pages
 test.html         Design-source prototype, read-only reference

@@ -56,6 +56,31 @@ export {
 } from './core/treeLayout'
 
 export {
+  JeBlockEditor,
+  JE_BLOCK_VERSION,
+  type JeBlock,
+  type JeBlockActionItem,
+  type JeBlockActionKey,
+  type JeBlockButton,
+  type JeBlockButtonContext,
+  type JeBlockDocument,
+  type JeBlockFit,
+  type JeBlockImage,
+  type JeBlockInput,
+  type JeBlockInsertKey,
+  type JeBlockLengthUnit,
+  type JeBlockLink,
+  type JeBlockMediaBlock,
+  type JeBlockPatch,
+  type JeBlockText,
+  type JeBlockToolbarItem,
+  type JeBlockType,
+  type JeBlockUpload,
+  type JeBlockVideo,
+  type JeBlockWidthPreset,
+} from './components/JeBlockEditor'
+export { JeBlockView, type JeBlockViewValue } from './components/JeBlockView'
+export {
   JeButton,
   type JeButtonSize,
   type JeButtonType,

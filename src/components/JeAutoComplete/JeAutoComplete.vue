@@ -12,6 +12,7 @@ import type { JeInputSize } from '../JeInput'
 import type { JeAutoCompleteOption } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeLocale } from '../JeLocale'
 
 defineOptions({ name: 'JeAutoComplete' })
 
@@ -29,6 +30,7 @@ const props = withDefaults(
     triggerOnFocus?: boolean
     /** 输入防抖毫秒数 */
     debounce?: number
+    /** 加载中提示，未传时用语言包的 loading 文案 */
     loadingText?: string
     emptyText?: string
     /** 尺寸，不传时取全局配置（configureJelly / JeConfigProvider）；透传给内部输入框 */
@@ -43,7 +45,7 @@ const props = withDefaults(
     clearable: true,
     triggerOnFocus: true,
     debounce: 300,
-    loadingText: '加载中…',
+    loadingText: undefined,
     emptyText: '无匹配结果',
     size: undefined,
     teleportTo: undefined,
@@ -64,6 +66,11 @@ const emit = defineEmits<{
   select: [option: JeAutoCompleteOption]
   change: [value: string]
 }>()
+
+const { t } = useJeLocale()
+
+/** 加载中提示：外部传了就用外部值，否则取语言包 */
+const loadingLabel = computed(() => props.loadingText ?? t('loading'))
 
 const uid = useId()
 const listId = `${uid}-listbox`
@@ -343,7 +350,7 @@ onBeforeUnmount(() => {
 
         <div v-if="loading" class="je-autocomplete__status" role="status">
           <JeIcon name="loading" :size="14" spin />
-          <span>{{ loadingText }}</span>
+          <span>{{ loadingLabel }}</span>
         </div>
 
         <template v-else-if="options.length > 0">

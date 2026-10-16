@@ -3,8 +3,11 @@ import { computed, ref, watch } from 'vue'
 import { nextZIndex } from '../../core/useZIndex'
 import JeIcon from '../JeIcon/JeIcon.vue'
 import JeScrollbar from '../JeScrollbar/JeScrollbar.vue'
+import { useJeLocale } from '../JeLocale'
 
 defineOptions({ name: 'JeFloatingPanel' })
+
+const { t } = useJeLocale()
 
 const props = withDefaults(
   defineProps<{
@@ -173,7 +176,7 @@ defineExpose({
           v-if="closeable"
           type="button"
           class="je-floating-panel__close"
-          aria-label="关闭"
+          :aria-label="t('close')"
           @pointerdown.stop
           @click="onClose"
         >

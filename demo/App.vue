@@ -143,7 +143,7 @@ const { isDark, toggleColorMode } = useColorMode()
 const { t, locale, options: localeOptions } = useDemoI18n()
 
 /**
- * 侧栏搜索：108 个条目光靠滚动很难找，按标题里的英文名 / 中文名做一次跨分组过滤。
+ * 侧栏搜索：109 个条目光靠滚动很难找，按标题里的英文名 / 中文名做一次跨分组过滤。
  * 不输入时直接返回原始结构（引用不变），不产生额外开销。
  */
 const query = ref('')

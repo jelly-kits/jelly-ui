@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, watch, type CSSProperties } from 'vue'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { JeIcon, type JeIconName } from '../JeIcon'
+import { useJeLocale } from '../JeLocale'
 import { useIsMobile } from '../../core/useMediaQuery'
 import { useTeleportTarget } from '../JeConfigProvider/types'
 import type { JeNotificationPosition, JeNotificationType } from './types'
@@ -41,6 +42,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   close: []
 }>()
+
+const { t } = useJeLocale()
 
 /**
  * 浮层挂载点。teleportTo 优先；旧的 teleport=false 仍表示就地渲染。
@@ -138,7 +141,7 @@ const layerStyle = computed<CSSProperties | undefined>(() => {
           v-if="showClose"
           type="button"
           class="je-notification__close"
-          aria-label="关闭"
+          :aria-label="t('close')"
           @click="close"
         >
           <JeIcon name="close" :size="15" />

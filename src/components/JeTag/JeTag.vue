@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import JeIcon from '../JeIcon/JeIcon.vue'
+import { useJeLocale } from '../JeLocale'
 import { useJeConfigSize } from '../JeConfigProvider/types'
 import type { JeTagEffect, JeTagSize, JeTagType } from './types'
 
@@ -26,6 +27,8 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{ close: [event: MouseEvent] }>()
+
+const { t } = useJeLocale()
 
 /** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
 const size = useJeConfigSize(() => props.size)
@@ -57,7 +60,7 @@ const onClose = (event: MouseEvent) => {
       type="button"
       class="je-tag__close"
       :disabled="disabled"
-      aria-label="关闭"
+      :aria-label="t('close')"
       @click="onClose"
     >
       <JeIcon name="close" :size="closeSize" />

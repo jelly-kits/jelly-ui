@@ -20,6 +20,10 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
+      // 更具体的子路径必须写在前面：别名是「先匹配先命中」，
+      // 反过来会被 '@jelly-kits/jelly-ui' 抢走，解析成 src/index.ts/editor 这种不存在的路径
+      '@jelly-kits/jelly-ui/editor': fileURLToPath(new URL('./src/editor.ts', import.meta.url)),
+      '@jelly-kits/jelly-ui/sortable': fileURLToPath(new URL('./src/sortable.ts', import.meta.url)),
       '@jelly-kits/jelly-ui': fileURLToPath(new URL('./src/index.ts', import.meta.url)),
     },
   },

@@ -158,6 +158,8 @@ export const enUS: Record<string, string> = {
   'ConfigProvider 子树配置': 'ConfigProvider',
   'Theme 全局主题': 'Theme',
   'Locale 国际化': 'Locale',
+  'Editor 富文本编辑器': 'Editor',
+  'BlockEditor 块编辑器': 'BlockEditor',
 
   // -------------------- install --------------------
   'Install 安装': 'Install',
@@ -1062,6 +1064,71 @@ export const enUS: Record<string, string> = {
   'disabled 的目标变淡且不可点击，其余仍可正常派发 select。': 'Disabled targets appear faded and are not clickable, while the rest still emit select normally.',
   'select 事件反馈': 'select event feedback',
   'select 回传 (option, index)，父级据此展示用户选中的目标。': 'select passes back (option, index), which the parent uses to display the target the user picked.',
+
+  // -------------------- editor --------------------
+  '基于 Tiptap 的轻量富文本编辑器：文字格式、标题、列表、超链接、图片与视频，不做图文环绕这类复杂排版。它是独立子入口，需要额外安装 tiptap 相关依赖。':
+    'A lightweight rich-text editor built on Tiptap: text formatting, headings, lists, hyperlinks, images, and video, without complex layouts such as text wrapping around images. It is a separate entry point and requires the tiptap dependencies to be installed.',
+  'v-model 默认绑 HTML 字符串，valueType 改成 json 则绑文档对象；内容变化即时回填。':
+    'v-model binds an HTML string by default; set valueType to json to bind the document object instead. Changes are written back immediately.',
+  '图片与视频（含多图上传）': 'Images and video (with multi-upload)',
+  '工具栏里的图片 / 视频各有一个输入面板：可以直接填或粘地址，也可以走上传回调（面板里显示进度）。图片支持一次选多张 —— 传了 uploadFiles 就把整批交给它、并发自己控制，否则逐个调用 upload，进度显示成「2/5 60%」。':
+    'The image / video buttons each open an input panel: type or paste a URL, or upload through a callback (progress is shown in the panel). Images can be picked several at a time: pass uploadFiles to hand the whole batch over and control concurrency yourself, otherwise upload is called one file at a time, with progress shown as "2/5 60%".',
+  '当前的 HTML': 'Current HTML',
+  '本页的 upload / uploadFiles 都是演示用的假上传：按档位推进进度后返回本地预览地址，真实项目里换成自己的接口即可。':
+    'The upload / uploadFiles on this page are mocks: they step the progress forward and then return local preview URLs. Swap in your own API in a real project.',
+  'JSON 取值': 'JSON value',
+  'valueType 设为 json 后，v-model 收发的就是 Tiptap 的文档对象，适合需要保留结构、后续二次编辑的场景。':
+    'With valueType set to json, v-model carries Tiptap document objects, which suits cases that need to keep the structure and edit it again later.',
+  '当前的 JSON': 'Current JSON',
+  '禁用与最小高度': 'Disabled and minimum height',
+  'disabled 让内容只读、工具栏不可用；minHeight 控制编辑区最小高度。':
+    'disabled makes the content read-only and disables the toolbar; minHeight sets the minimum height of the editing area.',
+  '自定义工具栏按钮': 'Custom toolbar buttons',
+  'toolbar 数组里既能写内置按钮的 key（同时就是白名单与顺序），也能直接写自定义按钮对象：给 icon 或 text，点击执行 onClick，还可以用 isActive 让它跟着光标高亮。':
+    'The toolbar array accepts built-in keys (which doubles as the whitelist and the display order) as well as custom button objects: give it an icon or text, run your logic in onClick, and use isActive to highlight it as the selection changes.',
+  '自定义按钮拿到的是编辑器实例，命令怎么执行由宿主决定；样式沿用工具栏的按钮类名。':
+    'A custom button receives the editor instance, so what the command does is up to you; the styling reuses the toolbar button class.',
+  '配置可用按钮': 'Configuring available buttons',
+  '只列想保留的按钮，其余一概不渲染；\'divider\' 用来画分组竖线。不传 toolbar 时显示全部内置按钮。':
+    'List only the buttons you want to keep and everything else is left out; \'divider\' draws a group separator. Without toolbar, all built-in buttons are shown.',
+
+  // -------------------- block editor --------------------
+  '把内容拆成「块」：一段文本、一张图片、一个视频、一条超链接各占一块，块宽占满、可拖动排序。数据是一份不含 HTML 的纯 JSON，小程序等其他端按 type 分支渲染即可（参考下面「只读渲染」）。':
+    'Split content into blocks: a paragraph, an image, a video, and a hyperlink each take one block; blocks span the full width and can be reordered by dragging. The data is plain JSON with no HTML, so other platforms such as mini programs can render it by branching on type (see "Read-only rendering" below).',
+  'v-model 收发 { version, blocks }：点一下块即选中（高亮边框），选中后块头部才显示图标 —— 拖动调顺序，点「编辑」弹出这个块的编辑窗口，改完点确定才落数据。':
+    'v-model carries { version, blocks }: click a block to select it (highlighted border) and only then does its header show the icons — drag to reorder, click "Edit" to open the block editing dialog, and the data is committed only after you confirm.',
+  'v-model 收发 { version, blocks }：点一下块即选中（高亮边框），选中后块头部才显示图标 —— 拖动调顺序，点「编辑」弹出这个块的编辑窗口（双击块同样直接打开），改完点确定才落数据。':
+    'v-model carries { version, blocks }: click a block to select it (highlighted border) and only then does its header show the icons — drag to reorder, and click "Edit" (or simply double-click the block) to open its editing dialog; the data is committed only after you confirm.',
+  '多图上传与尺寸缩放': 'Multi-image upload and size scaling',
+  '图片支持一次选多张：第一张落在当前块，其余各生成一个图片块插在它后面。宽度可以点档位（25% / 50% / 75% / 100%）或直接填数值，高度留空即按素材比例自适应，缩放方式对应 object-fit 的 contain / cover / fill。':
+    'Images can be picked several at a time: the first one fills the current block and each of the rest becomes a new image block inserted right after it. Width can be set by preset (25% / 50% / 75% / 100%) or by typing a value, leaving height empty keeps the natural aspect ratio, and the fit mode maps to object-fit contain / cover / fill.',
+  '本页的 upload 是演示用的假上传：延迟一下后返回本地预览地址，真实项目里换成自己的接口即可。':
+    'The upload on this page is a fake one for the demo: it waits a moment and returns a local preview URL; swap in your own endpoint in a real project.',
+  '只读渲染': 'Read-only rendering',
+  'JeBlockView 拿同一份 JSON 直接渲染，也是其他端实现展示侧时的参照：字段只有 text / url / alt / poster / title / width / height / fit。':
+    'JeBlockView renders the same JSON directly, and it doubles as a reference for the display side on other platforms: the only fields are text / url / alt / poster / title / width / height / fit.',
+  '自定义按钮与按钮配置': 'Custom buttons and button configuration',
+  'toolbar 与 blockActions 都是「白名单 + 顺序 + 自定义按钮」：内置项写 key，自定义项写对象，回调里能拿到块与下标，直接改数据，也可以调 openEditor 复用内置的编辑窗口。':
+    'Both toolbar and blockActions are "whitelist + order + custom buttons": write a key for built-ins and an object for custom ones, and the callback receives the block and its index so you can change the data directly, or call openEditor to reuse the built-in editing dialog.',
+  '限制块类型与禁用': 'Restricting block types and disabling',
+  'blockTypes 只放行文本与图片，其余「添加块」按钮不渲染；disabled 让整块编辑器只读。':
+    'blockTypes only allows text and image, so the other "add block" buttons are not rendered; disabled makes the whole editor read-only.',
+
+  // -------------------- drag sort --------------------
+  'DragSort 拖拽排序': 'DragSort drag-and-drop sorting',
+  '把一份数组接上 v-model 就能拖拽排序：既可以用内置列表（插槽定制条目内容），也可以给页面里已有的容器接上手柄、多选整组拖拽与跟随鼠标的预览。':
+    'Bind an array to v-model and you can sort it by dragging: either use the built-in list (customize each item through the slot) or hook up a container already on the page, with drag handles, multi-select group dragging and a mouse-following preview.',
+  'v-model 绑定数组，拖拽结束后按新顺序回传；条目内容用 item 插槽定制，卡片宽度不足时自动换行。':
+    'v-model binds the array and the new order is emitted once the drag ends; item content is customized through the item slot, and cards wrap automatically when the width runs out.',
+  '多选整组拖拽': 'Multi-select group dragging',
+  '点击条目可多选（再次点击取消），拖动其中任意一条会带着整组一起移动；拖动时左上角跟随鼠标的预览会显示条数，选中变化通过 update:selectedIds 回传。':
+    'Click an item to select it (click again to deselect); dragging any selected item moves the whole group together. While dragging, a preview following the cursor shows the count, and selection changes are emitted through update:selectedIds.',
+  '指定拖拽手柄': 'Specifying a drag handle',
+  '传 handle 后只有匹配该选择器的区域能发起拖拽，卡片其它位置可以正常放按钮 / 链接。':
+    'With handle set, only the area matching that selector can start a drag, leaving the rest of the card free for buttons or links.',
+  '外部容器模式': 'External container mode',
+  '传 target 指向页面里已有的容器，组件就不再渲染自己的列表，直接给这个元素接入拖拽；容器内的条目按位置与数据一一对应，不需要自己写 data-id。':
+    'Pass target pointing at a container already on the page and the component stops rendering its own list, wiring dragging directly onto that element; items inside are matched to the data by position, so you never write data-id yourself.',
 
   // -------------------- API 表（演示站外壳文案，见 ApiSection / apiGroups） --------------------
   '属性 Attributes': 'Attributes',
@@ -2100,6 +2167,65 @@ export const enUS: Record<string, string> = {
   '撤销上一次「增删 / 编辑 / 拖拽」（需 undoable）；成功返回 true，没得撤返回 false': 'undo the last add-remove / edit / drag (requires undoable); returns true on success and false when there is nothing to undo',
   '重做被撤销的变更（需 undoable）；成功返回 true，没得重做返回 false': 'redo an undone change (requires undoable); returns true on success and false when there is nothing to redo',
   '清空历史（需 undoable），之后 canUndo / canRedo 都为 false': 'clear the history (requires undoable); afterwards canUndo / canRedo are both false',
+  'v-model 绑定的数据（与 items 等价，同时传时以它为准）': 'the data bound with v-model (equivalent to items; it wins when both are passed)',
+  '兼容旧用法 v-model:items，等价于 modelValue': 'legacy v-model:items usage, equivalent to modelValue',
+  '外部拖拽容器：CSS 选择器、元素本身、返回元素的函数或 ref 对象，传了它就不再渲染内置列表': 'external drag container: a CSS selector, the element itself, a function returning the element, or a ref object; passing it stops the built-in list from rendering',
+  '拖拽手柄选择器，为空则整张卡片都可拖': 'drag handle selector; when empty the whole card can start a drag',
+  '限定容器内哪些子元素是数据条目（CSS 选择器），为空则全部子元素都视为条目': 'restricts which children inside the container are data items (CSS selector); when empty every child counts as an item',
+  '数据唯一键字段': 'field name for the item unique key',
+  '每张卡片的最小宽度（内置模式），行内可放的数量随父级宽度自适应': 'minimum width of each card (built-in mode); how many fit per row adapts to the parent width',
+  '列表可视区高度（内置模式），内容超出后出现滚动条': 'height of the list viewport (built-in mode); a scrollbar appears once the content overflows',
+  '是否允许多选（关闭后只支持单条拖拽排序）': 'whether multi-select is allowed (when off, only single-item sorting is supported)',
+  '拖动判定距离（px）：指针按下后移动超过该距离才真正进入拖拽': 'drag threshold in px: the drag only starts once the pointer moves beyond this distance after pressing',
+  '拖拽排序结束后回传新的数据顺序': 'emits the new data order after a drag-and-drop sort ends',
+  '与 update:modelValue 等价的旧事件名，供 v-model:items 使用': 'legacy event name equivalent to update:modelValue, for use with v-model:items',
+  '选中项变化时回传当前选中的 id 集合': 'emits the currently selected id set whenever the selection changes',
+  '内置模式下的条目内容': 'item content in built-in mode',
+
+  // JeEditor
+  '内容；html 格式是字符串，json 格式是文档对象，由 valueType 决定': 'the content; html format is a string and json format is a document object, decided by valueType',
+  'v-model 的取值格式': 'the format of the v-model value',
+  '内容为空时的占位文案，缺省取语言包 editor.placeholder': 'placeholder when the content is empty, defaults to editor.placeholder in the locale pack',
+  '禁用：只读且工具栏不可用': 'disabled: read-only, and the toolbar cannot be used',
+  '编辑区最小高度，数字按 px 处理': 'minimum height of the editing area, a number is treated as px',
+  '上传回调（图片 / 视频共用），不传则不显示面板里的「上传」按钮，只能填 / 粘地址。\n返回资源地址，编辑器插到当前光标处；图片多选时会被逐个调用。':
+    'upload callback (shared by images and videos); when not passed the panel hides the "Upload" button and you can only type / paste a URL.\nReturn the asset URL and the editor inserts it at the cursor; called for each file when several images are picked.',
+  '批量上传回调：图片多选时优先走它（返回地址数组，顺序与入参一致），\n由宿主决定并发；不传则退化成逐个调用 upload。':
+    'batch upload callback: used first when several images are picked (it returns an array of URLs in the same order as the input),\nleaving concurrency to the host; when not passed it degrades to calling upload for each file.',
+  '工具栏按钮的白名单：只列想显示的内置 key（`\'bold\'` / `\'link\'` / `\'image\'` …），\n数组顺序即展示顺序，`\'divider\'` 画一条分组竖线，也可以直接混入自定义按钮对象。\n不传时显示全部内置按钮。':
+    'whitelist of toolbar buttons: list only the built-in keys you want (`\'bold\'` / `\'link\'` / `\'image\'` …),\nthe array order is the display order, `\'divider\'` draws a group separator, and custom button objects can be mixed in directly.\nWhen not passed all built-in buttons are shown.',
+  '内容变化，与 update:modelValue 同值，便于 v-model 之外单独监听': 'content changed, with the same value as update:modelValue, for listening separately from v-model',
+  '上传失败（回调抛错时派发）：单文件时数组里只有一个': 'upload failed (emitted when the callback throws): the array holds a single item in the single-file case',
+  'Tiptap 编辑器实例，需要更细的控制时用（挂载完成前是 undefined）': 'the Tiptap editor instance, for finer control (undefined before the component is mounted)',
+  '取当前内容的 HTML': 'get the current content as HTML',
+  '取当前内容的 JSON': 'get the current content as JSON',
+  '清空内容（会派发一次内容变化）': 'clear the content (emits one content change)',
+  '聚焦编辑区': 'focus the editing area',
+
+  // JeBlockEditor
+  '完整数据，v-model 绑定': 'the full data, bound with v-model',
+  '允许添加的块类型白名单，不传则四种都能加': 'whitelist of block types that can be added; when not passed all four can be added',
+  '顶部操作栏：内置「添加块」按钮写块类型 key（同时就是白名单与顺序），\n`\'divider\'` 画分组竖线，也可以直接混入自定义按钮对象。不传则四种块都可加。':
+    'top toolbar: write a block-type key for each built-in "add block" button (it doubles as the whitelist and the order),\n`\'divider\'` draws a group separator, and custom button objects can be mixed in directly. When not passed all four block types can be added.',
+  '每块头部的操作按钮：内置 key 是 `\'drag\' | \'edit\' | \'up\' | \'down\' | \'copy\' | \'remove\'`，\n同样支持 `\'divider\'` 与自定义按钮对象。不传即全部六个。':
+    'action buttons in each block header: the built-in keys are `\'drag\' | \'edit\' | \'up\' | \'down\' | \'copy\' | \'remove\'`,\nwhich also support `\'divider\'` and custom button objects. When not passed all six are shown.',
+  '文本块的占位文案': 'placeholder for text blocks',
+  '图片 / 视频上传回调，不传则编辑窗口里只能填地址': 'image / video upload callback; when not passed the editing dialog only lets you type a URL',
+  '数据变化，与 update:modelValue 同值，便于 v-model 之外单独监听': 'data changed, with the same value as update:modelValue, for listening separately from v-model',
+  '上传失败（回调抛错时派发）': 'upload failed (emitted when the callback throws)',
+  '当前数据（深拷贝，可直接存库）': 'the current data (a deep copy, ready to be persisted)',
+  '追加一个空块，返回新块的 id': 'append an empty block, returns the id of the new block',
+  '打开某个块的编辑窗口': 'open the editing dialog of a block',
+  '清空所有块': 'clear all blocks',
+
+  // 回退到语言包的按钮 / 提示类文案
+  '确认按钮文字，未传时用语言包的 confirm 文案': 'confirm button text; when not passed the confirm entry in the locale pack is used',
+  '取消按钮文字，未传时用语言包的 cancel 文案': 'cancel button text; when not passed the cancel entry in the locale pack is used',
+  '取消按钮文字，未传时用语言包的 cancel 文案；传空字符串则不显示取消按钮': 'cancel button text; when not passed the cancel entry in the locale pack is used; an empty string hides the cancel button',
+  '加载中提示，未传时用语言包的 loading 文案': 'loading hint; when not passed the loading entry in the locale pack is used',
+  '描述文案，未传时用语言包的 empty 文案': 'description text; when not passed the empty entry in the locale pack is used',
+  '取消按钮文案，未传时用语言包的 cancel 文案': 'cancel button text; when not passed the cancel entry in the locale pack is used',
+  '数据为空时的提示文案，未传时用语言包的 empty 文案': 'text shown when there is no data; when not passed the empty entry in the locale pack is used',
 }
 
 

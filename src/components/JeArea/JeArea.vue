@@ -8,6 +8,7 @@ import { nextZIndex } from '../../core/useZIndex'
 import type { JeAreaOption, JeAreaSize } from './types'
 import type { JeTeleportTarget } from '../../core/globalConfig'
 import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeLocale } from '../JeLocale'
 
 defineOptions({ name: 'JeArea' })
 
@@ -26,7 +27,9 @@ const props = withDefaults(
     /** 未选择的标签页上的占位文字 */
     columnsPlaceholder?: string
     disabled?: boolean
+    /** 确认按钮文字，未传时用语言包的 confirm 文案 */
     confirmText?: string
+    /** 取消按钮文字，未传时用语言包的 cancel 文案 */
     cancelText?: string
     showToolbar?: boolean
     visibleItemCount?: number
@@ -45,8 +48,8 @@ const props = withDefaults(
     placeholder: '请选择所在地区',
     columnsPlaceholder: '请选择',
     disabled: false,
-    confirmText: '确认',
-    cancelText: '取消',
+    confirmText: undefined,
+    cancelText: undefined,
     showToolbar: true,
     visibleItemCount: 5,
     itemHeight: 44,
@@ -76,6 +79,12 @@ const emit = defineEmits<{
   /** 点击取消或遮罩 */
   cancel: []
 }>()
+
+const { t } = useJeLocale()
+
+/** 工具栏按钮文案：外部传了就用外部值，否则取语言包 */
+const confirmLabel = computed(() => props.confirmText ?? t('confirm'))
+const cancelLabel = computed(() => props.cancelText ?? t('cancel'))
 
 const panelRef = ref<HTMLElement | null>(null)
 const scrollerRef = ref<HTMLElement | null>(null)
@@ -312,7 +321,7 @@ onBeforeUnmount(() => {
 
           <div v-if="showToolbar" class="je-area__toolbar">
             <button type="button" class="je-area__toolbar-btn" @click="onCancel">
-              {{ cancelText }}
+              {{ cancelLabel }}
             </button>
             <h2 class="je-area__title">{{ title }}</h2>
             <button
@@ -320,7 +329,7 @@ onBeforeUnmount(() => {
               class="je-area__toolbar-btn je-area__toolbar-btn--confirm"
               @click="onConfirm"
             >
-              {{ confirmText }}
+              {{ confirmLabel }}
             </button>
           </div>
 

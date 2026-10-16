@@ -115,6 +115,9 @@ import ShareSheetPage from './pages/ShareSheetPage.vue'
 import ConfigProviderPage from './pages/ConfigProviderPage.vue'
 import LocalePage from './pages/LocalePage.vue'
 import ThemePage from './pages/ThemePage.vue'
+import EditorPage from './pages/EditorPage.vue'
+import BlockEditorPage from './pages/BlockEditorPage.vue'
+import DragSortPage from './pages/DragSortPage.vue'
 import { getPreferredLocale, setDemoLocale, type DemoLocale } from './i18n'
 
 interface DemoRoute {
@@ -420,6 +423,14 @@ export const demoRoutes: DemoRoute[] = [
   },
   { path: '/theme', title: 'Theme 全局主题', group: '工程能力', component: ThemePage },
   { path: '/locale', title: 'Locale 国际化', group: '工程能力', component: LocalePage },
+  { path: '/editor', title: 'Editor 富文本编辑器', group: '工程能力', component: EditorPage },
+  {
+    path: '/block-editor',
+    title: 'BlockEditor 块编辑器',
+    group: '工程能力',
+    component: BlockEditorPage,
+  },
+  { path: '/drag-sort', title: 'DragSort 拖拽排序', group: '工程能力', component: DragSortPage },
 ]
 
 /**

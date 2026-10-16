@@ -201,9 +201,8 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "cancelText",
-        "description": "取消按钮文字，传空字符串则不显示取消按钮",
-        "type": "string",
-        "default": "'取消'"
+        "description": "取消按钮文字，未传时用语言包的 cancel 文案；传空字符串则不显示取消按钮",
+        "type": "string"
       },
       {
         "name": "closeOnClickAction",
@@ -550,15 +549,13 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "confirmText",
-        "description": "确认按钮文案",
-        "type": "string",
-        "default": "'确认'"
+        "description": "确认按钮文字，未传时用语言包的 confirm 文案",
+        "type": "string"
       },
       {
         "name": "cancelText",
-        "description": "取消按钮文案",
-        "type": "string",
-        "default": "'取消'"
+        "description": "取消按钮文字，未传时用语言包的 cancel 文案",
+        "type": "string"
       },
       {
         "name": "showToolbar",
@@ -683,9 +680,8 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "loadingText",
-        "description": "加载中的文案",
-        "type": "string",
-        "default": "'加载中…'"
+        "description": "加载中提示，未传时用语言包的 loading 文案",
+        "type": "string"
       },
       {
         "name": "emptyText",
@@ -853,6 +849,91 @@ export const componentApi: Record<string, ComponentApi> = {
       }
     ],
     "exposes": []
+  },
+  "JeBlockEditor": {
+    "attributes": [
+      {
+        "name": "modelValue",
+        "description": "完整数据，v-model 绑定",
+        "type": "JeBlockDocument"
+      },
+      {
+        "name": "blockTypes",
+        "description": "允许添加的块类型白名单，不传则四种都能加",
+        "type": "JeBlockType[]"
+      },
+      {
+        "name": "toolbar",
+        "description": "顶部操作栏：内置「添加块」按钮写块类型 key（同时就是白名单与顺序），\n`'divider'` 画分组竖线，也可以直接混入自定义按钮对象。不传则四种块都可加。",
+        "type": "JeBlockToolbarItem[]"
+      },
+      {
+        "name": "blockActions",
+        "description": "每块头部的操作按钮：内置 key 是 `'drag' | 'edit' | 'up' | 'down' | 'copy' | 'remove'`，\n同样支持 `'divider'` 与自定义按钮对象。不传即全部六个。",
+        "type": "JeBlockActionItem[]"
+      },
+      {
+        "name": "placeholder",
+        "description": "文本块的占位文案",
+        "type": "string"
+      },
+      {
+        "name": "upload",
+        "description": "图片 / 视频上传回调，不传则编辑窗口里只能填地址",
+        "type": "JeBlockUpload"
+      },
+      {
+        "name": "disabled",
+        "description": "是否禁用",
+        "type": "boolean",
+        "default": "false"
+      }
+    ],
+    "events": [
+      {
+        "name": "update:modelValue",
+        "description": "v-model 的 modelValue 更新时触发",
+        "type": "(value: JeBlockDocument) => void"
+      },
+      {
+        "name": "change",
+        "description": "数据变化，与 update:modelValue 同值，便于 v-model 之外单独监听",
+        "type": "(value: JeBlockDocument) => void"
+      },
+      {
+        "name": "upload-error",
+        "description": "上传失败（回调抛错时派发）",
+        "type": "(file: File, error: unknown) => void"
+      }
+    ],
+    "slots": [
+      {
+        "name": "block-head",
+        "type": "{ block, index, edit }"
+      },
+      {
+        "name": "footer",
+        "description": "底部区域"
+      }
+    ],
+    "exposes": [
+      {
+        "name": "getDocument",
+        "description": "当前数据（深拷贝，可直接存库）"
+      },
+      {
+        "name": "addBlock",
+        "description": "追加一个空块，返回新块的 id"
+      },
+      {
+        "name": "openEditor",
+        "description": "打开某个块的编辑窗口"
+      },
+      {
+        "name": "clear",
+        "description": "清空所有块"
+      }
+    ]
   },
   "JeBreadcrumb": {
     "attributes": [
@@ -2289,6 +2370,102 @@ export const componentApi: Record<string, ComponentApi> = {
     ],
     "exposes": []
   },
+  "JeDragSort": {
+    "attributes": [
+      {
+        "name": "modelValue",
+        "description": "v-model 绑定的数据（与 items 等价，同时传时以它为准）",
+        "type": "JeDragSortItem[]"
+      },
+      {
+        "name": "items",
+        "description": "兼容旧用法 v-model:items，等价于 modelValue",
+        "type": "JeDragSortItem[]"
+      },
+      {
+        "name": "target",
+        "description": "外部拖拽容器：CSS 选择器、元素本身、返回元素的函数或 ref 对象，传了它就不再渲染内置列表",
+        "type": "JeDragSortTarget"
+      },
+      {
+        "name": "handle",
+        "description": "拖拽手柄选择器，为空则整张卡片都可拖",
+        "type": "string",
+        "default": "''"
+      },
+      {
+        "name": "draggable",
+        "description": "限定容器内哪些子元素是数据条目（CSS 选择器），为空则全部子元素都视为条目",
+        "type": "string",
+        "default": "''"
+      },
+      {
+        "name": "itemKey",
+        "description": "数据唯一键字段",
+        "type": "string",
+        "default": "'id'"
+      },
+      {
+        "name": "itemMinWidth",
+        "description": "每张卡片的最小宽度（内置模式），行内可放的数量随父级宽度自适应",
+        "type": "string",
+        "default": "'220px'"
+      },
+      {
+        "name": "height",
+        "description": "列表可视区高度（内置模式），内容超出后出现滚动条",
+        "type": "string",
+        "default": "'420px'"
+      },
+      {
+        "name": "selectable",
+        "description": "是否允许多选（关闭后只支持单条拖拽排序）",
+        "type": "boolean",
+        "default": "true"
+      },
+      {
+        "name": "dragThreshold",
+        "description": "拖动判定距离（px）：指针按下后移动超过该距离才真正进入拖拽",
+        "type": "number",
+        "default": "6"
+      }
+    ],
+    "events": [
+      {
+        "name": "update:modelValue",
+        "description": "拖拽排序结束后回传新的数据顺序",
+        "type": "(value: JeDragSortItem[]) => void"
+      },
+      {
+        "name": "update:items",
+        "description": "与 update:modelValue 等价的旧事件名，供 v-model:items 使用",
+        "type": "(value: JeDragSortItem[]) => void"
+      },
+      {
+        "name": "update:selectedIds",
+        "description": "选中项变化时回传当前选中的 id 集合",
+        "type": "(value: Set<string | number>) => void"
+      }
+    ],
+    "slots": [
+      {
+        "name": "item",
+        "description": "内置模式下的条目内容",
+        "type": "{ item, index }"
+      }
+    ],
+    "exposes": [
+      {
+        "name": "toggleSelect"
+      },
+      {
+        "name": "selectAll"
+      },
+      {
+        "name": "clearSelection"
+      }
+    ]
+  },
   "JeDrawer": {
     "attributes": [
       {
@@ -2592,13 +2769,114 @@ export const componentApi: Record<string, ComponentApi> = {
     "slots": [],
     "exposes": []
   },
+  "JeEditor": {
+    "attributes": [
+      {
+        "name": "modelValue",
+        "description": "内容；html 格式是字符串，json 格式是文档对象，由 valueType 决定",
+        "type": "JeEditorValue"
+      },
+      {
+        "name": "valueType",
+        "description": "v-model 的取值格式",
+        "type": "JeEditorValueType",
+        "default": "'html'"
+      },
+      {
+        "name": "placeholder",
+        "description": "内容为空时的占位文案，缺省取语言包 editor.placeholder",
+        "type": "string"
+      },
+      {
+        "name": "disabled",
+        "description": "禁用：只读且工具栏不可用",
+        "type": "boolean",
+        "default": "false"
+      },
+      {
+        "name": "minHeight",
+        "description": "编辑区最小高度，数字按 px 处理",
+        "type": "number | string",
+        "default": "240"
+      },
+      {
+        "name": "upload",
+        "description": "上传回调（图片 / 视频共用），不传则不显示面板里的「上传」按钮，只能填 / 粘地址。\n返回资源地址，编辑器插到当前光标处；图片多选时会被逐个调用。",
+        "type": "JeEditorUpload"
+      },
+      {
+        "name": "uploadFiles",
+        "description": "批量上传回调：图片多选时优先走它（返回地址数组，顺序与入参一致），\n由宿主决定并发；不传则退化成逐个调用 upload。",
+        "type": "JeEditorUploadFiles"
+      },
+      {
+        "name": "toolbar",
+        "description": "工具栏按钮的白名单：只列想显示的内置 key（`'bold'` / `'link'` / `'image'` …），\n数组顺序即展示顺序，`'divider'` 画一条分组竖线，也可以直接混入自定义按钮对象。\n不传时显示全部内置按钮。",
+        "type": "JeEditorToolbarItem[]"
+      }
+    ],
+    "events": [
+      {
+        "name": "update:modelValue",
+        "description": "v-model 的 modelValue 更新时触发",
+        "type": "(value: JeEditorValue) => void"
+      },
+      {
+        "name": "change",
+        "description": "内容变化，与 update:modelValue 同值，便于 v-model 之外单独监听",
+        "type": "(value: JeEditorValue) => void"
+      },
+      {
+        "name": "focus",
+        "description": "获得焦点时触发",
+        "type": "() => void"
+      },
+      {
+        "name": "blur",
+        "description": "失去焦点时触发",
+        "type": "() => void"
+      },
+      {
+        "name": "upload-error",
+        "description": "上传失败（回调抛错时派发）：单文件时数组里只有一个",
+        "type": "(files: File[], error: unknown) => void"
+      }
+    ],
+    "slots": [
+      {
+        "name": "footer",
+        "description": "底部区域"
+      }
+    ],
+    "exposes": [
+      {
+        "name": "editor",
+        "description": "Tiptap 编辑器实例，需要更细的控制时用（挂载完成前是 undefined）"
+      },
+      {
+        "name": "getHTML",
+        "description": "取当前内容的 HTML"
+      },
+      {
+        "name": "getJSON",
+        "description": "取当前内容的 JSON"
+      },
+      {
+        "name": "clear",
+        "description": "清空内容（会派发一次内容变化）"
+      },
+      {
+        "name": "focus",
+        "description": "聚焦编辑区"
+      }
+    ]
+  },
   "JeEmpty": {
     "attributes": [
       {
         "name": "description",
-        "description": "描述文案",
-        "type": "string",
-        "default": "'暂无数据'"
+        "description": "描述文案，未传时用语言包的 empty 文案",
+        "type": "string"
       },
       {
         "name": "imageSize",
@@ -3393,9 +3671,8 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "loadingText",
-        "description": "加载中提示",
-        "type": "string",
-        "default": "'加载中...'"
+        "description": "加载中提示，未传时用语言包的 loading 文案",
+        "type": "string"
       },
       {
         "name": "finishedText",
@@ -5151,15 +5428,13 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "confirmText",
-        "description": "确认按钮文字",
-        "type": "string",
-        "default": "'确认'"
+        "description": "确认按钮文字，未传时用语言包的 confirm 文案",
+        "type": "string"
       },
       {
         "name": "cancelText",
-        "description": "取消按钮文字",
-        "type": "string",
-        "default": "'取消'"
+        "description": "取消按钮文字，未传时用语言包的 cancel 文案",
+        "type": "string"
       },
       {
         "name": "showToolbar",
@@ -5243,15 +5518,13 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "confirmText",
-        "description": "确认按钮文案",
-        "type": "string",
-        "default": "'确定'"
+        "description": "确认按钮文字，未传时用语言包的 confirm 文案",
+        "type": "string"
       },
       {
         "name": "cancelText",
-        "description": "取消按钮文案",
-        "type": "string",
-        "default": "'取消'"
+        "description": "取消按钮文字，未传时用语言包的 cancel 文案",
+        "type": "string"
       },
       {
         "name": "placement",
@@ -5685,9 +5958,8 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "loadingText",
-        "description": "加载中提示",
-        "type": "string",
-        "default": "'加载中...'"
+        "description": "加载中提示，未传时用语言包的 loading 文案",
+        "type": "string"
       },
       {
         "name": "successText",
@@ -6165,9 +6437,8 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "cancelText",
-        "description": "取消按钮文案",
-        "type": "string",
-        "default": "'取消'"
+        "description": "取消按钮文案，未传时用语言包的 cancel 文案",
+        "type": "string"
       },
       {
         "name": "clearable",
@@ -7660,9 +7931,8 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "emptyText",
-        "description": "数据为空时的提示文案",
-        "type": "string",
-        "default": "'暂无数据'"
+        "description": "数据为空时的提示文案，未传时用语言包的 empty 文案",
+        "type": "string"
       },
       {
         "name": "rowKey",
@@ -8610,9 +8880,8 @@ export const componentApi: Record<string, ComponentApi> = {
       },
       {
         "name": "emptyText",
-        "description": "数据为空时的文案",
-        "type": "string",
-        "default": "'暂无数据'"
+        "description": "数据为空时的提示文案，未传时用语言包的 empty 文案",
+        "type": "string"
       }
     ],
     "events": [
@@ -9391,6 +9660,15 @@ export const pageApi: Record<string, string[]> = {
   "/theme": [],
   "/locale": [
     "JeLocale"
+  ],
+  "/editor": [
+    "JeEditor"
+  ],
+  "/block-editor": [
+    "JeBlockEditor"
+  ],
+  "/drag-sort": [
+    "JeDragSort"
   ]
 }
 
@@ -9503,5 +9781,8 @@ export const pageSource: Record<string, string> = {
   "/address-list": "AddressListPage.vue",
   "/config-provider": "ConfigProviderPage.vue",
   "/theme": "ThemePage.vue",
-  "/locale": "LocalePage.vue"
+  "/locale": "LocalePage.vue",
+  "/editor": "EditorPage.vue",
+  "/block-editor": "BlockEditorPage.vue",
+  "/drag-sort": "DragSortPage.vue"
 }

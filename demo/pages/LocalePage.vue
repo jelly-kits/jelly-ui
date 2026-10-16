@@ -104,6 +104,10 @@ const registerSnippet = [
             <dd>{{ m.t('cancel') }}</dd>
             <dt>t('loading')</dt>
             <dd>{{ m.t('loading') }}</dd>
+            <dt>t('close')</dt>
+            <dd>{{ m.t('close') }}</dd>
+            <dt>t('empty')</dt>
+            <dd>{{ m.t('empty') }}</dd>
             <dt>t('signature.clear')</dt>
             <dd>{{ m.t('signature.clear') }}</dd>
             <dt>t('shareSheet.title')</dt>
@@ -196,9 +200,10 @@ const registerSnippet = [
     >
       <pre class="code"><code>{{ adapterSnippet }}</code></pre>
       <p class="note">
-        key 就是组件内部用的那套点路径：confirm、cancel、loading、signature.clear、signature.undo、signature.tip、
+        key 就是组件内部用的那套点路径：confirm、cancel、loading、close、empty、signature.clear、signature.undo、signature.tip、
         shareSheet.title、shareSheet.cancel、imagePreview.close、imagePreview.index、orgChart.name、orgChart.title、
-        orgChart.addChild、orgChart.remove、orgChart.removeConfirm、orgChart.removeConfirmLeaf、orgChart.newNode。
+        orgChart.addChild、orgChart.remove、orgChart.removeConfirm、orgChart.removeConfirmLeaf、orgChart.newNode、
+        dragSort.count、dragSort.more。
         prefix 用于把它们挂到你的命名空间下（如 jelly.）。
       </p>
     </DemoBlock>

@@ -55,6 +55,12 @@ jobs:
             exit 1
           fi
 
+      # 先把更新说明抽出来。拿不到就直接失败 —— 绝不能走到「npm 已发、Release 没建」的半成品状态，
+      # 那种情况没法靠重跑工作流补救（npm publish 会因版本已存在而失败）。
+      # 顺带校验了「CHANGELOG 先改好再发版」这条约定：脚本找不到该版本号会退出 1。
+      - name: 抽取 CHANGELOG 里本版本的更新说明
+        run: node scripts/changelog-section.mjs "$GITHUB_REF_NAME" > /tmp/release-notes.md
+
       # prepublishOnly 会自动跑 npm run build，这里不用重复构建。
       # 可信发布会自动生成 provenance 签名，不需要 --provenance。
       # 注意包名下的 dist-tag 会落在 latest：预发布版本（如 0.2.0-beta.1）
@@ -62,13 +68,10 @@ jobs:
       - name: 发布到 npm
         run: npm publish
 
-      # 发完 npm 再把 CHANGELOG.md 里本版本的小节发成 GitHub Release，
-      # 让 <https://github.com/jelly-kits/jelly-ui/releases> 直接就是给使用方看的更新说明。
-      # 脚本找不到该版本号会退出 1：等于顺带校验了「CHANGELOG 先改好再发版」这条约定。
+      # 再用上一步抽好的正文建 GitHub Release，
+      # 让 <https://github.com/jelly-kits/jelly-ui/releases> 就是给使用方看的更新说明。
       # gh 是 ubuntu-latest 预装的，不必引入第三方 action。
       - name: 发布 GitHub Release
-        run: |
-          node scripts/changelog-section.mjs "$GITHUB_REF_NAME" > /tmp/release-notes.md
-          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file /tmp/release-notes.md
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file /tmp/release-notes.md
         env:
           GH_TOKEN: ${{ github.token }}

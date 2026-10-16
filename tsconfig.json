@@ -16,6 +16,8 @@
     "types": ["vite/client", "node"],
     "baseUrl": ".",
     "paths": {
+      "@jelly-kits/jelly-ui/editor": ["./src/editor.ts"],
+      "@jelly-kits/jelly-ui/sortable": ["./src/sortable.ts"],
       "@jelly-kits/jelly-ui": ["./src/index.ts"]
     }
   },

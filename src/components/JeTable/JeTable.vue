@@ -10,6 +10,7 @@ import type { JeIconName } from '../JeIcon/icons'
 import { JeScrollbar } from '../JeScrollbar'
 import { JeTooltip } from '../JeTooltip'
 import { useJeConfigSize, useTeleportTarget } from '../JeConfigProvider/types'
+import { useJeLocale } from '../JeLocale'
 import type {
   JeTableCellRef,
   JeTableCellSpan,
@@ -30,7 +31,7 @@ const props = withDefaults(defineProps<JeTableProps>(), {
   cardLabelPosition: 'left',
   height: undefined,
   maxHeight: undefined,
-  emptyText: '暂无数据',
+  emptyText: undefined,
   rowKey: 'id',
   showHeader: true,
   highlightCurrentRow: false,
@@ -64,6 +65,11 @@ const props = withDefaults(defineProps<JeTableProps>(), {
 
 /** 浮层挂载点，缺省时跟随 ConfigProvider / configureJelly，最终落到 body */
 const teleportTarget = useTeleportTarget(() => props.teleportTo)
+
+const { t } = useJeLocale()
+
+/** 空态文案：外部传了就用外部值，否则取语言包 */
+const emptyLabel = computed(() => props.emptyText ?? t('empty'))
 
 /** 尺寸：组件自身优先，再退回全局配置（configureJelly / JeConfigProvider） */
 const size = useJeConfigSize(() => props.size)
@@ -2292,7 +2298,7 @@ defineExpose({
               class="je-table__cell je-table__empty-cell"
               :colspan="Math.max(leafColumns.length, 1)"
             >
-              <JeEmpty :description="emptyText" :image-size="80" />
+              <JeEmpty :description="emptyLabel" :image-size="80" />
             </td>
           </tr>
 
@@ -2303,7 +2309,7 @@ defineExpose({
               class="je-table__cell je-table__cell--summary"
               :colspan="Math.max(leafColumns.length, 1)"
             >
-              {{ emptyText }}
+              {{ emptyLabel }}
             </td>
             <template
               v-else
@@ -2335,7 +2341,7 @@ defineExpose({
       -->
       <div v-else class="je-table__cards">
         <div v-if="!renderRows.length" class="je-table__cards-empty">
-          <JeEmpty :description="emptyText" :image-size="80" />
+          <JeEmpty :description="emptyLabel" :image-size="80" />
         </div>
 
         <article

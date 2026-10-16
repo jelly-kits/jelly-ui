@@ -221,7 +221,7 @@ export interface JeTableProps {
   height?: string | number
   /** 最大高度：数据少时按内容撑开，超出后才出现纵向滚动 */
   maxHeight?: string | number
-  /** 数据为空时的提示文案 */
+  /** 数据为空时的提示文案，未传时用语言包的 empty 文案 */
   emptyText?: string
   /** 行唯一键的字段名（支持 `user.info.id` 这种多级路径），或自定义取值函数 */
   rowKey?: string | ((row: JeTableRow) => string | number)
